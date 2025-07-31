@@ -55,11 +55,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Handle sign-in
 document.getElementById('loginBtn').addEventListener('click', async () => {
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-  });
-  if (error) alert('Login failed!');
+  const redirectUrl = 'https://minitopia.vercel.app'; // or http://localhost:3000/indexv2.html
+
+await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
+    redirectTo: redirectUrl
+  }
 });
+
 
 // Handle sign-out
 document.getElementById('logoutBtn').addEventListener('click', async () => {
