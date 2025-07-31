@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const supabaseUrl = 'https://rdomgvvjbjfrvkbhjxds.supabase.co'; // TODO: Replace with your Supabase project URL
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54'; // TODO: Replace with your Supabase anon key
+    const supabaseUrl = 'https://rdomgvvjbjfrvkbhjxds.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54'; // your anon key
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     const createBtn = document.getElementById('createBtn');
@@ -10,16 +10,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const postsGrid = document.querySelector('.posts-grid');
     const activityTimeline = document.querySelector('.activity-timeline');
 
+    // Generate unique 8-character post ID
     function generateId(length = 8) {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let id = '';
-    for (let i = 0; i < length; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let id = '';
+        for (let i = 0; i < length; i++) {
+            id += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return id;
     }
-    return id;
-}
 
-
+    // Load all posts from Supabase
     async function loadPosts() {
         postsGrid.innerHTML = '';
         activityTimeline.innerHTML = '';
@@ -50,49 +51,26 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-   postForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const title = document.getElementById('postTitle').value;
-    const author = document.getElementById('postAuthor').value;
-    const category = document.getElementById('postCategory').value;
-    const content = document.getElementById('postContent').innerHTML;
-    const image = document.getElementById('postImage').value || 'https://via.placeholder.com/600x400?text=6b6t+Blog';
-    const newId = generateId();
-
-    const { error } = await supabase.from('posts').insert([
-        {
-            id: newId,
-            title,
-            author,
-            category,
-            content,
-            image
-        }
-    ]);
-
-    if (error) {
-        alert('Error publishing post!');
-        console.error(error);
-        return;
-    }
-
-    await loadPosts();
-    postForm.reset();
-    document.getElementById('postContent').innerHTML = '';
-    createModal.classList.remove('active');
-    alert('Post published successfully!');
-    window.location.href = `post.html?post_id=${newId}`;
-});
+    // Handle form submission
+    postForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
         const title = document.getElementById('postTitle').value;
         const author = document.getElementById('postAuthor').value;
         const category = document.getElementById('postCategory').value;
         const content = document.getElementById('postContent').innerHTML;
         const image = document.getElementById('postImage').value || 'https://via.placeholder.com/600x400?text=6b6t+Blog';
+        const newId = generateId();
 
         const { error } = await supabase.from('posts').insert([
-            { title, author, category, content, image }
+            {
+                id: newId,
+                title,
+                author,
+                category,
+                content,
+                image
+            }
         ]);
 
         if (error) {
@@ -106,8 +84,10 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('postContent').innerHTML = '';
         createModal.classList.remove('active');
         alert('Post published successfully!');
+        window.location.href = `post.html?post_id=${newId}`;
     });
 
+    // Create post card
     function createPostCard(post) {
         const card = document.createElement('article');
         card.className = 'post-card glass';
@@ -122,28 +102,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
                 <p class="post-card-excerpt">${post.excerpt}</p>
             </div>`;
-       card.addEventListener('click', () => {
-    window.location.href = `post.html?post_id=${post.id}`;
-});
+        card.addEventListener('click', () => {
+            window.location.href = `post.html?post_id=${post.id}`;
+        });
         return card;
     }
 
-
-const newId = generateId();
-const { error } = await supabase.from('posts').insert([{
-    id: newId,
-    title,
-    author,
-    category,
-    content,
-    image
-}]);
-
-if (!error) {
-    window.location.href = `post.html?post_id=${newId}`;
-}
-
-
+    // Create activity item
     function createActivityItem(activity) {
         const item = document.createElement('div');
         item.className = 'timeline-item';
@@ -172,16 +137,19 @@ if (!error) {
         return categories[category] || 'Unknown';
     }
 
+    // Modal controls
     createBtn.addEventListener('click', () => createModal.classList.add('active'));
     closeModalBtns.forEach(btn => btn.addEventListener('click', () => createModal.classList.remove('active')));
     createModal.addEventListener('click', (e) => {
         if (e.target === createModal) createModal.classList.remove('active');
     });
 
+    // Hero scroll
     document.querySelector('.hero-scroll').addEventListener('click', () => {
         document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
     });
 
+    // Rich text shortcuts
     document.addEventListener('keydown', function (e) {
         const editor = document.getElementById('postContent');
         if (document.activeElement === editor) {
@@ -197,5 +165,6 @@ if (!error) {
         }
     });
 
+    // Load everything
     loadPosts();
 });
