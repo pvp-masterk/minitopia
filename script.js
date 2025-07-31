@@ -59,15 +59,16 @@ document.addEventListener('DOMContentLoaded', function () {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: 'https://minitopia.vercel.app' // or localhost for local dev
+      redirectTo: 'https://minitopia.vercel.app' // ✅ force correct site
     }
   });
 
   if (error) {
     console.error('Login failed:', error);
-    alert('Google login failed!');
+    alert('Login failed');
   }
 });
+
 
 
 
