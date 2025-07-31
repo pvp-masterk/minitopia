@@ -80,11 +80,35 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
                 <p class="post-card-excerpt">${post.excerpt}</p>
             </div>`;
-        card.addEventListener('click', () => {
-            alert(`Viewing post: ${post.title}`);
-        });
+       card.addEventListener('click', () => {
+    window.location.href = `post.html?post_id=${post.id}`;
+});
         return card;
     }
+
+    function generateId(length = 8) {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let id = '';
+    for (let i = 0; i < length; i++) {
+        id += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return id;
+}
+
+const newId = generateId();
+const { error } = await supabase.from('posts').insert([{
+    id: newId,
+    title,
+    author,
+    category,
+    content,
+    image
+}]);
+
+if (!error) {
+    window.location.href = `post.html?post_id=${newId}`;
+}
+
 
     function createActivityItem(activity) {
         const item = document.createElement('div');
