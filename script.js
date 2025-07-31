@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     const supabaseUrl = 'https://rdomgvvjbjfrvkbhjxds.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54'; // your anon key
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     const createBtn = document.getElementById('createBtn');
@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const postsGrid = document.querySelector('.posts-grid');
     const activityTimeline = document.querySelector('.activity-timeline');
 
+    // Generate unique 8-character post ID
     function generateId(length = 8) {
         const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         let id = '';
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return id;
     }
 
+    // Load all posts from Supabase
     async function loadPosts() {
         postsGrid.innerHTML = '';
         activityTimeline.innerHTML = '';
@@ -49,6 +51,61 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const user = supabase.auth.getUser();
+
+// Handle sign-in
+document.getElementById('loginBtn').addEventListener('click', async () => {
+  supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
+    redirectTo: 'https://minitopia.vercel.app' // Or http://localhost:3000
+  }
+  )};
+});
+
+
+
+// Handle sign-out
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await supabase.auth.signOut();
+  location.reload();
+});
+
+// Update UI on auth state
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    const user = session.user;
+    showUserAvatar(user);
+  } else {
+    showLoginButton();
+  }
+});
+
+    function showUserAvatar(user) {
+  document.getElementById('loginBtn').classList.add('hidden');
+  const avatarUrl = user.user_metadata?.avatar_url || 'default-avatar.png';
+  const email = user.email;
+  const avatar = document.getElementById('userAvatar');
+  const dropdown = document.getElementById('userDropdown');
+
+  avatar.src = avatarUrl;
+  document.getElementById('userEmail').textContent = email;
+
+  document.getElementById('userMenu').classList.remove('hidden');
+
+  avatar.addEventListener('click', () => {
+    dropdown.classList.toggle('hidden');
+  });
+}
+
+function showLoginButton() {
+  document.getElementById('loginBtn').classList.remove('hidden');
+  document.getElementById('userMenu').classList.add('hidden');
+}
+
+
+
+    // Handle form submission
     postForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -60,15 +117,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const newId = generateId();
 
         const { error } = await supabase.from('posts').insert([
-            {
-                id: newId,
-                title,
-                author,
-                category,
-                content,
-                image
-            }
-        ]);
+  {
+    post_id: newId, // ✅ use post_id, NOT id
+    title,
+    author,
+    category,
+    content,
+    image
+  }
+]);
+
+        window.location.href = `post.html?post_id=${newId}`;
+
 
         if (error) {
             alert('Error publishing post!');
@@ -84,6 +144,7 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.href = `post.html?post_id=${newId}`;
     });
 
+    // Create post card
     function createPostCard(post) {
         const card = document.createElement('article');
         card.className = 'post-card glass';
@@ -104,6 +165,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return card;
     }
 
+    // Create activity item
     function createActivityItem(activity) {
         const item = document.createElement('div');
         item.className = 'timeline-item';
@@ -132,16 +194,26 @@ document.addEventListener('DOMContentLoaded', function () {
         return categories[category] || 'Unknown';
     }
 
-    createBtn.addEventListener('click', () => createModal.classList.add('active'));
+    // Modal controls
+    createBtn.addEventListener('click', async () => {
+  const session = await supabase.auth.getSession();
+  if (!session.data.session) {
+    alert('You must be logged in to create a post.');
+    return;
+  }
+  createModal.classList.add('active');
+});
     closeModalBtns.forEach(btn => btn.addEventListener('click', () => createModal.classList.remove('active')));
     createModal.addEventListener('click', (e) => {
         if (e.target === createModal) createModal.classList.remove('active');
     });
 
+    // Hero scroll
     document.querySelector('.hero-scroll').addEventListener('click', () => {
         document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
     });
 
+    // Rich text shortcuts
     document.addEventListener('keydown', function (e) {
         const editor = document.getElementById('postContent');
         if (document.activeElement === editor) {
@@ -157,5 +229,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Load everything
     loadPosts();
 });
