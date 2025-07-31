@@ -10,6 +10,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const postsGrid = document.querySelector('.posts-grid');
     const activityTimeline = document.querySelector('.activity-timeline');
 
+    function generateId(length = 8) {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let id = '';
+    for (let i = 0; i < length; i++) {
+        id += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return id;
+}
+
+
     async function loadPosts() {
         postsGrid.innerHTML = '';
         activityTimeline.innerHTML = '';
@@ -40,19 +50,39 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    postForm.addEventListener('submit', async (e) => {
+   postForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    const title = document.getElementById('postTitle').value;
+    const author = document.getElementById('postAuthor').value;
+    const category = document.getElementById('postCategory').value;
+    const content = document.getElementById('postContent').innerHTML;
+    const image = document.getElementById('postImage').value || 'https://via.placeholder.com/600x400?text=6b6t+Blog';
+    const newId = generateId();
+
     const { error } = await supabase.from('posts').insert([
-    {
-        id: newId,
-        title,
-        author,
-        category,
-        content,
-        image
+        {
+            id: newId,
+            title,
+            author,
+            category,
+            content,
+            image
+        }
+    ]);
+
+    if (error) {
+        alert('Error publishing post!');
+        console.error(error);
+        return;
     }
-]); // ✅ correct brackets
- // ✅ now legal
+
+    await loadPosts();
+    postForm.reset();
+    document.getElementById('postContent').innerHTML = '';
+    createModal.classList.remove('active');
+    alert('Post published successfully!');
+    window.location.href = `post.html?post_id=${newId}`;
 });
 
         const title = document.getElementById('postTitle').value;
@@ -98,14 +128,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return card;
     }
 
-    function generateId(length = 8) {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let id = '';
-    for (let i = 0; i < length; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return id;
-}
 
 const newId = generateId();
 const { error } = await supabase.from('posts').insert([{
