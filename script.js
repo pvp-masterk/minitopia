@@ -176,7 +176,7 @@ window.location.href = `post.html?post_id=${newId}`;
                 <p class="post-card-excerpt">${post.excerpt}</p>
             </div>`;
         card.addEventListener('click', () => {
-            window.location.href = `post.html?post_id=${post.id}`;
+            window.location.href = `post.html?post_id=${newId}`;
         });
         return card;
     }
