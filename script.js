@@ -51,6 +51,33 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const user = supabase.auth.getUser();
+
+// Handle sign-in
+document.getElementById('loginBtn').addEventListener('click', async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+  });
+  if (error) alert('Login failed!');
+});
+
+// Handle sign-out
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await supabase.auth.signOut();
+  location.reload();
+});
+
+// Update UI on auth state
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    const user = session.user;
+    showUserAvatar(user);
+  } else {
+    showLoginButton();
+  }
+});
+
+
     // Handle form submission
     postForm.addEventListener('submit', async (e) => {
         e.preventDefault();
