@@ -669,6 +669,7 @@ body {
   position: absolute;
   top: 1rem;
   right: 2rem;
+  z-index: 2000; /* Make sure it sits above nav */
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -694,6 +695,10 @@ body {
   padding: 1rem;
   border-radius: 10px;
   border: 1px solid var(--glass-border);
-  z-index: 1000;
+  z-index: 2001;
+}
+
+.hidden {
+  display: none !important;
 }
 
