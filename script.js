@@ -77,6 +77,29 @@ supabase.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
+    function showUserAvatar(user) {
+  document.getElementById('loginBtn').classList.add('hidden');
+  const avatarUrl = user.user_metadata?.avatar_url || 'default-avatar.png';
+  const email = user.email;
+  const avatar = document.getElementById('userAvatar');
+  const dropdown = document.getElementById('userDropdown');
+
+  avatar.src = avatarUrl;
+  document.getElementById('userEmail').textContent = email;
+
+  document.getElementById('userMenu').classList.remove('hidden');
+
+  avatar.addEventListener('click', () => {
+    dropdown.classList.toggle('hidden');
+  });
+}
+
+function showLoginButton() {
+  document.getElementById('loginBtn').classList.remove('hidden');
+  document.getElementById('userMenu').classList.add('hidden');
+}
+
+
 
     // Handle form submission
     postForm.addEventListener('submit', async (e) => {
@@ -165,7 +188,14 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     }
 
     // Modal controls
-    createBtn.addEventListener('click', () => createModal.classList.add('active'));
+    createBtn.addEventListener('click', async () => {
+  const session = await supabase.auth.getSession();
+  if (!session.data.session) {
+    alert('You must be logged in to create a post.');
+    return;
+  }
+  createModal.classList.add('active');
+});
     closeModalBtns.forEach(btn => btn.addEventListener('click', () => createModal.classList.remove('active')));
     createModal.addEventListener('click', (e) => {
         if (e.target === createModal) createModal.classList.remove('active');
