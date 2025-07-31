@@ -7,6 +7,17 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+  <div class="auth-controls">
+  <button id="loginBtn" class="create-btn">Login</button>
+  <div id="userMenu" class="user-menu hidden">
+    <img id="userAvatar" class="avatar" src="" alt="Avatar">
+    <div class="dropdown hidden" id="userDropdown">
+      <p id="userEmail"></p>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
+</div>
+
   <main class="container" id="postContainer">
     <p>Loading post...</p>
   </main>
