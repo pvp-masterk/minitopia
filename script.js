@@ -58,9 +58,9 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
   supabase.auth.signInWithOAuth({
   provider: 'google',
   options: {
-    redirectTo: 'https://vercel.vercel.app' // Or http://localhost:3000
+    redirectTo: 'https://minitopia.vercel.app' // Or http://localhost:3000
   }
-  )}
+  )};
 });
 
 
