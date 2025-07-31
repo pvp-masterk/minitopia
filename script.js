@@ -124,7 +124,6 @@ function showLoginButton() {
         const image = document.getElementById('postImage').value || 'https://via.placeholder.com/600x400?text=6b6t+Blog';
         const newId = generateId();
 
-       const newId = generateId(); // 8-char ID
 await supabase.from('posts').insert([{
   post_id: newId,
   title,
