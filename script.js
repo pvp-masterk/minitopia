@@ -11,18 +11,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const activityTimeline = document.querySelector('.activity-timeline');
 
     // Generate unique 8-character post ID
-    const newId = generateId(); // 8-char ID
-await supabase.from('posts').insert([{
-  post_id: newId,
-  title,
-  author,
-  category,
-  content,
-  image
-}]);
-
-// Redirect
-window.location.href = `post.html?post_id=${newId}`;
+    function generateId(length = 8) {
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let id = '';
+        for (let i = 0; i < length; i++) {
+            id += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return id;
+    }
 
 
     // Load all posts from Supabase
@@ -128,16 +124,19 @@ function showLoginButton() {
         const image = document.getElementById('postImage').value || 'https://via.placeholder.com/600x400?text=6b6t+Blog';
         const newId = generateId();
 
-        const { error } = await supabase.from('posts').insert([
-            {
-                id: newId,
-                title,
-                author,
-                category,
-                content,
-                image
-            }
-        ]);
+       const newId = generateId(); // 8-char ID
+await supabase.from('posts').insert([{
+  post_id: newId,
+  title,
+  author,
+  category,
+  content,
+  image
+}]);
+
+// Redirect
+window.location.href = `post.html?post_id=${newId}`;
+
 
         if (error) {
             alert('Error publishing post!');
