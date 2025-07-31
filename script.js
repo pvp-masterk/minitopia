@@ -1,3 +1,6 @@
+const supabaseUrl = 'https://rdomgvvjbjfrvkbhjxds.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54';
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 document.addEventListener('DOMContentLoaded', function() {
     // Sample data for posts (in a real app, this would come from a database)
     const samplePosts = [
@@ -90,21 +93,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const activityTimeline = document.querySelector('.activity-timeline');
 
     // Load sample data
-    function loadSampleData() {
-        // Load posts
-        postsGrid.innerHTML = '';
-        samplePosts.forEach(post => {
-            const postCard = createPostCard(post);
-            postsGrid.appendChild(postCard);
-        });
+    async function loadSampleData() {
+    // Clear grids
+    postsGrid.innerHTML = '';
+    activityTimeline.innerHTML = '';
 
-        // Load activity
-        activityTimeline.innerHTML = '';
-        sampleActivity.forEach(activity => {
-            const activityItem = createActivityItem(activity);
-            activityTimeline.appendChild(activityItem);
-        });
+    const { data: posts, error } = await supabase
+        .from('posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error loading posts:', error);
+        return;
     }
+
+    posts.forEach(post => {
+        const postCard = createPostCard({
+            ...post,
+            date: post.created_at,
+            excerpt: post.content.substring(0, 150) + '...'
+        });
+        postsGrid.appendChild(postCard);
+    });
+
+    // Optionally generate sample activity from posts
+    posts.slice(0, 5).forEach(post => {
+        const activityItem = createActivityItem({
+            date: post.created_at,
+            content: `<strong>${post.author}</strong> published: <em>${post.title}</em>`
+        });
+        activityTimeline.appendChild(activityItem);
+    });
+}
+
 
     // Create post card element
     function createPostCard(post) {
@@ -179,49 +201,42 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Form submission
-    postForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        // Get form values
-        const title = document.getElementById('postTitle').value;
-        const author = document.getElementById('postAuthor').value;
-        const category = document.getElementById('postCategory').value;
-        const content = document.getElementById('postContent').innerHTML;
-        const image = document.getElementById('postImage').value || 'https://via.placeholder.com/600x400?text=6b6t+Blog';
-        
-        // Create new post object
-        const newPost = {
-            id: samplePosts.length + 1,
+    postForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const title = document.getElementById('postTitle').value;
+    const author = document.getElementById('postAuthor').value;
+    const category = document.getElementById('postCategory').value;
+    const content = document.getElementById('postContent').innerHTML;
+    const image = document.getElementById('postImage').value || 'https://via.placeholder.com/600x400?text=6b6t+Blog';
+
+    const { error } = await supabase.from('posts').insert([
+        {
             title,
             author,
-            date: new Date().toISOString().split('T')[0],
             category,
-            excerpt: content.substring(0, 150) + '...', // Truncate for excerpt
+            content,
             image
-        };
+        }
+    ]);
+
+    if (error) {
+        alert('Error publishing post!');
+        console.error(error);
+        return;
+    }
+
+    // Reload posts
+    loadSampleData();
+
+    // Reset form
+    postForm.reset();
+    document.getElementById('postContent').innerHTML = '';
+    createModal.classList.remove('active');
+    alert('Post published successfully!');
+});
+
         
-        // Add to sample data (in a real app, this would save to a database)
-        samplePosts.unshift(newPost);
-        
-        // Add to activity (in a real app, this would save to a database)
-        sampleActivity.unshift({
-            date: new Date().toISOString().split('T')[0],
-            content: `<strong>${author}</strong> published a new post: <em>${title}</em>`
-        });
-        
-        // Reload data to show new post
-        loadSampleData();
-        
-        // Reset form
-        postForm.reset();
-        document.getElementById('postContent').innerHTML = '';
-        
-        // Close modal
-        createModal.classList.remove('active');
-        
-        // Show success message
-        alert('Post published successfully!');
-    });
 
     // Simple rich text editor functionality for the content area
     document.addEventListener('keydown', function(e) {
