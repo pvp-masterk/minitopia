@@ -55,14 +55,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Handle sign-in
 document.getElementById('loginBtn').addEventListener('click', async () => {
-  const redirectUrl = 'https://minitopia.vercel.app'; // or http://localhost:3000/indexv2.html
-
-await supabase.auth.signInWithOAuth({
+  supabase.auth.signInWithOAuth({
   provider: 'google',
   options: {
-    redirectTo: redirectUrl
+    redirectTo: 'https://vercel.vercel.app' // Or http://localhost:3000
+  }
   }
 });
+
 
 
 // Handle sign-out
