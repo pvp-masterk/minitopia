@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     const supabaseUrl = 'https://rdomgvvjbjfrvkbhjxds.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54'; // your anon key
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54';
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     const createBtn = document.getElementById('createBtn');
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const postsGrid = document.querySelector('.posts-grid');
     const activityTimeline = document.querySelector('.activity-timeline');
 
-    // Generate unique 8-character post ID
+    // Generate 8-char post_id
     function generateId(length = 8) {
         const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         let id = '';
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return id;
     }
 
-    // Load all posts from Supabase
+    // Load posts
     async function loadPosts() {
         postsGrid.innerHTML = '';
         activityTimeline.innerHTML = '';
@@ -39,74 +39,68 @@ document.addEventListener('DOMContentLoaded', function () {
             const card = createPostCard({
                 ...post,
                 date: post.created_at,
-                excerpt: post.content.substring(0, 150) + '...'
+                excerpt: post.content.substring(0, 150) + '...',
             });
             postsGrid.appendChild(card);
 
             const activity = createActivityItem({
                 date: post.created_at,
-                content: `<strong>${post.author}</strong> published: <em>${post.title}</em>`
+                content: `<strong>${post.author}</strong> published: <em>${post.title}</em>`,
             });
             activityTimeline.appendChild(activity);
         });
     }
 
-    const user = supabase.auth.getUser();
+    // Handle login
+    document.getElementById('loginBtn')?.addEventListener('click', async () => {
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: 'https://minitopia.vercel.app'
+            }
+        });
+        if (error) alert('Login failed');
+    });
 
-// Handle sign-in
-document.getElementById('loginBtn').addEventListener('click', async () => {
-  supabase.auth.signInWithOAuth({
-  provider: 'google',
-  options: {
-    redirectTo: 'https://minitopia.vercel.app' // Or http://localhost:3000
-  }
-  )};
-});
+    // Handle logout
+    document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        location.reload();
+    });
 
-
-
-// Handle sign-out
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  await supabase.auth.signOut();
-  location.reload();
-});
-
-// Update UI on auth state
-supabase.auth.onAuthStateChange(async (event, session) => {
-  if (session?.user) {
-    const user = session.user;
-    showUserAvatar(user);
-  } else {
-    showLoginButton();
-  }
-});
+    // Auth state change
+    supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session?.user) {
+            showUserAvatar(session.user);
+        } else {
+            showLoginButton();
+        }
+    });
 
     function showUserAvatar(user) {
-  document.getElementById('loginBtn').classList.add('hidden');
-  const avatarUrl = user.user_metadata?.avatar_url || 'default-avatar.png';
-  const email = user.email;
-  const avatar = document.getElementById('userAvatar');
-  const dropdown = document.getElementById('userDropdown');
+        document.getElementById('loginBtn')?.classList.add('hidden');
+        const avatarUrl = user.user_metadata?.avatar_url || 'default-avatar.png';
+        const avatar = document.getElementById('userAvatar');
+        const dropdown = document.getElementById('userDropdown');
 
-  avatar.src = avatarUrl;
-  document.getElementById('userEmail').textContent = email;
+        if (avatar) {
+            avatar.src = avatarUrl;
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userMenu')?.classList.remove('hidden');
 
-  document.getElementById('userMenu').classList.remove('hidden');
+            avatar.addEventListener('click', () => {
+                dropdown.classList.toggle('hidden');
+            });
+        }
+    }
 
-  avatar.addEventListener('click', () => {
-    dropdown.classList.toggle('hidden');
-  });
-}
-
-function showLoginButton() {
-  document.getElementById('loginBtn').classList.remove('hidden');
-  document.getElementById('userMenu').classList.add('hidden');
-}
-
-
+    function showLoginButton() {
+        document.getElementById('loginBtn')?.classList.remove('hidden');
+        document.getElementById('userMenu')?.classList.add('hidden');
+    }
 
     // Handle form submission
-    postForm.addEventListener('submit', async (e) => {
+    postForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const title = document.getElementById('postTitle').value;
@@ -117,18 +111,15 @@ function showLoginButton() {
         const newId = generateId();
 
         const { error } = await supabase.from('posts').insert([
-  {
-    post_id: newId, // ✅ use post_id, NOT id
-    title,
-    author,
-    category,
-    content,
-    image
-  }
-]);
-
-        window.location.href = `post.html?post_id=${newId}`;
-
+            {
+                post_id: newId,
+                title,
+                author,
+                category,
+                content,
+                image
+            }
+        ]);
 
         if (error) {
             alert('Error publishing post!');
@@ -142,6 +133,24 @@ function showLoginButton() {
         createModal.classList.remove('active');
         alert('Post published successfully!');
         window.location.href = `post.html?post_id=${newId}`;
+    });
+
+    // Only allow post creation if logged in
+    createBtn?.addEventListener('click', async () => {
+        const { data: session } = await supabase.auth.getSession();
+        if (!session.session) {
+            alert('You must be logged in to create a post.');
+            return;
+        }
+        createModal.classList.add('active');
+    });
+
+    closeModalBtns.forEach(btn =>
+        btn.addEventListener('click', () => createModal.classList.remove('active'))
+    );
+
+    createModal?.addEventListener('click', (e) => {
+        if (e.target === createModal) createModal.classList.remove('active');
     });
 
     // Create post card
@@ -160,12 +169,11 @@ function showLoginButton() {
                 <p class="post-card-excerpt">${post.excerpt}</p>
             </div>`;
         card.addEventListener('click', () => {
-            window.location.href = `post.html?post_id=${post.id}`;
+            window.location.href = `post.html?post_id=${post.post_id}`;
         });
         return card;
     }
 
-    // Create activity item
     function createActivityItem(activity) {
         const item = document.createElement('div');
         item.className = 'timeline-item';
@@ -194,26 +202,12 @@ function showLoginButton() {
         return categories[category] || 'Unknown';
     }
 
-    // Modal controls
-    createBtn.addEventListener('click', async () => {
-  const session = await supabase.auth.getSession();
-  if (!session.data.session) {
-    alert('You must be logged in to create a post.');
-    return;
-  }
-  createModal.classList.add('active');
-});
-    closeModalBtns.forEach(btn => btn.addEventListener('click', () => createModal.classList.remove('active')));
-    createModal.addEventListener('click', (e) => {
-        if (e.target === createModal) createModal.classList.remove('active');
+    // Smooth scroll
+    document.querySelector('.hero-scroll')?.addEventListener('click', () => {
+        document.querySelector('.container')?.scrollIntoView({ behavior: 'smooth' });
     });
 
-    // Hero scroll
-    document.querySelector('.hero-scroll').addEventListener('click', () => {
-        document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
-    });
-
-    // Rich text shortcuts
+    // Rich text formatting shortcuts
     document.addEventListener('keydown', function (e) {
         const editor = document.getElementById('postContent');
         if (document.activeElement === editor) {
@@ -229,6 +223,6 @@ function showLoginButton() {
         }
     });
 
-    // Load everything
+    // Load on page ready
     loadPosts();
 });
