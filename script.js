@@ -41,7 +41,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     postForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    e.preventDefault();
+    const { error } = await supabase.from('posts').insert([...]); // ✅ now legal
+});
 
         const title = document.getElementById('postTitle').value;
         const author = document.getElementById('postAuthor').value;
