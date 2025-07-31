@@ -42,7 +42,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     postForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const { error } = await supabase.from('posts').insert([...]); // ✅ now legal
+    const { error } = await supabase.from('posts').insert([
+    {
+        id: newId,
+        title,
+        author,
+        category,
+        content,
+        image
+    }
+]); // ✅ correct brackets
+ // ✅ now legal
 });
 
         const title = document.getElementById('postTitle').value;
