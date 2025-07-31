@@ -122,19 +122,28 @@ function showLoginButton() {
         const category = document.getElementById('postCategory').value;
         const content = document.getElementById('postContent').innerHTML;
         const image = document.getElementById('postImage').value || 'https://via.placeholder.com/600x400?text=6b6t+Blog';
-        const newId = generateId();
+        const newId = generateId(); // 8-char string
 
-await supabase.from('posts').insert([{
-  post_id: newId,
-  title,
-  author,
-  category,
-  content,
-  image
-}]);
+const { error } = await supabase.from('posts').insert([
+  {
+    post_id: newId,
+    title,
+    author,
+    category,
+    content,
+    image
+  }
+]);
 
-// Redirect
+if (error) {
+  alert('Error publishing post!');
+  console.error(error);
+  return;
+}
+
+// ✅ Redirect using post_id
 window.location.href = `post.html?post_id=${newId}`;
+
 
 
         if (error) {
