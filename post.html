@@ -1,67 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>6b6t Blog Post</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body>
-  <div class="auth-controls">
-  <button id="loginBtn" class="create-btn">Login</button>
-  <div id="userMenu" class="user-menu hidden">
-    <img id="userAvatar" class="avatar" src="" alt="Avatar">
-    <div class="dropdown hidden" id="userDropdown">
-      <p id="userEmail"></p>
-      <button id="logoutBtn">Logout</button>
-    </div>
-  </div>
-</div>
+<script type="module">
+  const supabase = window.supabase.createClient(
+    'https://rdomgvvjbjfrvkbhjxds.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54'
+  );
 
-  <main class="container" id="postContainer">
-    <p>Loading post...</p>
-  </main>
+  const urlParams = new URLSearchParams(window.location.search);
+  const postId = urlParams.get('post_id');
 
-  <script type="module">
-    const supabase = window.supabase.createClient(
-      'https://rdomgvvjbjfrvkbhjxds.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54'
-    );
+  async function loadPost() {
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('post_id', postId) // ✅ THIS IS KEY
+      .single();
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const postId = urlParams.get('post_id');
+    const container = document.getElementById('postContainer');
 
-
-    async function loadPost() {
-     const { data, error } = await supabase
-  .from('posts')
-  .select('*')
-  .eq('post_id', postId) // ✅ RIGHT
-  .single();
-
-      const container = document.getElementById('postContainer');
-
-      if (error || !data) {
-        container.innerHTML = '<p>Post not found or an error occurred.</p>';
-        return;
-      }
-
-      container.innerHTML = `
-        <article class="post-card glass">
-          <img src="${data.image}" alt="${data.title}" class="post-card-image">
-          <div class="post-card-content">
-            <h1>${data.title}</h1>
-            <p><strong>By:</strong> ${data.author}</p>
-            <p><strong>Category:</strong> ${data.category}</p>
-            <p><strong>Date:</strong> ${new Date(data.created_at).toLocaleDateString()}</p>
-            <hr>
-            <div>${data.content}</div>
-          </div>
-        </article>
-      `;
+    if (error || !data) {
+      container.innerHTML = '<p>Post not found or an error occurred.</p>';
+      return;
     }
 
-    loadPost();
-  </script>
-</body>
-</html>
+    container.innerHTML = `
+      <article class="post-card glass">
+        <img src="${data.image}" alt="${data.title}" class="post-card-image">
+        <div class="post-card-content">
+          <h1>${data.title}</h1>
+          <p><strong>By:</strong> ${data.author}</p>
+          <p><strong>Category:</strong> ${data.category}</p>
+          <p><strong>Date:</strong> ${new Date(data.created_at).toLocaleDateString()}</p>
+          <hr>
+          <div>${data.content}</div>
+        </div>
+      </article>
+    `;
+  }
+
+  loadPost();
+</script>
