@@ -24,10 +24,11 @@
 
     async function loadPost() {
       const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('post_id', postId)
-        .single();
+  .from('posts')
+  .select('*', { head: false })
+  .eq('post_id', postId)
+  .single();
+
 
       const container = document.getElementById('postContainer');
 
