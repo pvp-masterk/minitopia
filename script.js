@@ -60,7 +60,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
   options: {
     redirectTo: 'https://vercel.vercel.app' // Or http://localhost:3000
   }
-  }
+  )}
 });
 
 
