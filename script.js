@@ -54,13 +54,19 @@ document.addEventListener('DOMContentLoaded', function () {
     const user = supabase.auth.getUser();
 
 // Handle sign-in
-document.getElementById('loginBtn').addEventListener('click', async () => {
-  supabase.auth.signInWithOAuth({
-  provider: 'google',
-  options: {
-    redirectTo: 'https://minitopia.vercel.app' // Or http://localhost:3000
+
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: 'https://minitopia.vercel.app' // or localhost for local dev
+    }
+  });
+
+  if (error) {
+    console.error('Login failed:', error);
+    alert('Google login failed!');
   }
-  )};
 });
 
 
