@@ -32,11 +32,11 @@
     const postId = urlParams.get('post_id');
 
     async function loadPost() {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('id', postId)
-        .single();
+     const { data, error } = await supabase
+  .from('posts')
+  .select('*')
+  .eq('post_id', postId) // ✅ RIGHT
+  .single();
 
       const container = document.getElementById('postContainer');
 
