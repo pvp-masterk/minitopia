@@ -783,40 +783,48 @@ function showToast(msg, color = 'var(--accent-color)') {
 }
 
 async function loadUserHeader() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user) return;
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (!session?.user) {
+    console.warn("No active session", sessionError);
+    return;
+  }
 
   currentUser = session.user;
-
   const user_id = currentUser.id;
-  const username = currentUser.user_metadata.full_name;
-  const avatar = currentUser.user_metadata.avatar_url;
+  const username = currentUser.user_metadata.full_name || "Anonymous";
+  const avatar = currentUser.user_metadata.avatar_url || "";
 
-  // Fetch user or create them if they don't exist
-  const { data: existingUser, error } = await supabase
-    .from('users')
-    .select('id')
-    .eq('id', user_id)
-    .maybeSingle(); // <--- IMPORTANT FIX
+  // Check if user exists
+  let { data: userRow, error: fetchError } = await supabase
+    .from("users")
+    .select("id")
+    .eq("id", user_id)
+    .maybeSingle(); // <- does NOT throw if 0 rows
 
-  if (!existingUser) {
-    await supabase.from('users').insert({
+  if (!userRow) {
+    console.log("User not found, inserting...");
+    const { error: insertError } = await supabase.from("users").insert({
       id: user_id,
       username,
       avatar_url: avatar,
       balance: 50
     });
+
+    if (insertError) {
+      console.error("User insert failed:", insertError);
+      return;
+    }
   }
 
-  // Create user UI
-  const userBox = document.createElement('div');
-  userBox.style.display = 'flex';
-  userBox.style.alignItems = 'center';
-  userBox.style.gap = '10px';
+  // UI Elements
+  const userBox = document.createElement("div");
+  userBox.style.display = "flex";
+  userBox.style.alignItems = "center";
+  userBox.style.gap = "10px";
 
-  balanceDisplay = document.createElement('span');
-  balanceDisplay.style.marginRight = '10px';
-  balanceDisplay.textContent = 'Balance: $...';
+  balanceDisplay = document.createElement("span");
+  balanceDisplay.style.marginRight = "10px";
+  balanceDisplay.textContent = "Balance: $...";
 
   userBox.innerHTML = `
     <img src="${avatar}" alt="avatar" style="width:40px;height:40px;border-radius:50%">
@@ -824,7 +832,7 @@ async function loadUserHeader() {
     <a href="/profile.html?id=${user_id}" style="background:var(--accent-color);color:white;padding:0.4rem 0.8rem;border-radius:6px;text-decoration:none;">View Profile</a>
   `;
   userBox.prepend(balanceDisplay);
-  document.querySelector('header')?.appendChild(userBox);
+  document.querySelector("header")?.appendChild(userBox);
 
   await updateBalanceDisplay();
 }
@@ -833,18 +841,18 @@ async function updateBalanceDisplay() {
   if (!currentUser || !balanceDisplay) return;
 
   const { data, error } = await supabase
-    .from('users')
-    .select('balance')
-    .eq('id', currentUser.id)
-    .single();
+    .from("users")
+    .select("balance")
+    .eq("id", currentUser.id)
+    .maybeSingle(); // SAFER than .single()
 
-  if (error || !data || typeof data.balance !== 'number') {
-    console.warn('Failed to load balance:', error);
-    balanceDisplay.textContent = 'Balance: $0.00';
+  if (!data || error) {
+    console.warn("Failed to load balance:", error || "no user row");
+    balanceDisplay.textContent = "Balance: $0.00";
     return;
   }
 
-  balanceDisplay.textContent = `Balance: $${data.balance.toFixed(2)}`;
+  balanceDisplay.textContent = `Balance: $${(+data.balance).toFixed(2)}`;
 }
 
 function generateDetailedChartData(change) {
