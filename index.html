@@ -726,10 +726,14 @@
       <p><strong>Streak:</strong> ${profile.streak} days</p>
       <p><strong>Badges:</strong> ${profile.badges.join(', ') || 'None'}</p>
       <p><strong>Verified:</strong> ${profile.verified ? '✅' : '❌'}</p>
+      <p><strong>Last Claimed:</strong> ${profile.last_claimed ? new Date(profile.last_claimed).toLocaleString() : 'Never'}</p>
+<button id="claimRewardBtn" style="margin-top: 1rem; padding: 0.5rem 1rem; background: green; color:white; border:none; border-radius: 6px; cursor:pointer;">
+  🎁 Claim Daily Reward
+</button>
       <button id="saveProfileBtn" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--accent-color); color:white; border:none; border-radius: 6px; cursor:pointer;">Save Bio</button>
     `;
     document.querySelector('.container').appendChild(container);
-
+document.getElementById('claimRewardBtn').onclick = () => claimDailyReward(googleId);
     document.getElementById('saveProfileBtn').onclick = async () => {
       const newBio = document.getElementById('bioInput').value;
       const { error: updateErr } = await supabase
@@ -744,6 +748,58 @@
 
   createAuthBlock();
   checkUser();
+
+async function claimDailyReward(googleId) {
+  const { data: profile, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('google_id', googleId)
+    .single();
+
+  if (error) {
+    alert('Failed to fetch profile');
+    return;
+  }
+
+  const now = new Date();
+  const lastClaim = profile.last_claimed ? new Date(profile.last_claimed) : null;
+  const msInDay = 1000 * 60 * 60 * 24;
+
+  // If already claimed today
+  if (lastClaim && (now - lastClaim < msInDay)) {
+    const hoursLeft = ((msInDay - (now - lastClaim)) / (1000 * 60 * 60)).toFixed(1);
+    alert(`You've already claimed your reward. Come back in ${hoursLeft} hours!`);
+    return;
+  }
+
+  // Update streak: +1 if yesterday claimed, else reset
+  let newStreak = 1;
+  if (lastClaim && (now - lastClaim < msInDay * 2)) {
+    newStreak = profile.streak + 1;
+  }
+
+  const reward = 50 + (5 * (newStreak - 1)); // base 50 + 5 per streak
+  const newBalance = profile.balance + reward;
+
+  const { error: updateError } = await supabase
+    .from('users')
+    .update({
+      streak: newStreak,
+      balance: newBalance,
+      last_claimed: now.toISOString()
+    })
+    .eq('google_id', googleId);
+
+  if (updateError) {
+    alert('Failed to update reward info.');
+    return;
+  }
+
+  alert(`🎉 You claimed ${reward} tokens! Streak: ${newStreak} days`);
+  location.reload(); // optional, refresh to reflect changes
+}
+
+    
 </script>
 
     
