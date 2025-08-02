@@ -940,6 +940,7 @@ document.body.setAttribute('data-theme', localStorage.getItem('theme') || 'dark'
 document.addEventListener('DOMContentLoaded', async () => {
   await loadUserHeader();
   renderCryptos();
+  setupModal(); // <-- FIX: this creates #tradeAmount input
 });
 </script>
 
