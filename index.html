@@ -654,37 +654,30 @@
   const username = authUser.user_metadata.full_name;
   const avatar = authUser.user_metadata.avatar_url;
 
-  const { data: existingUser, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('google_id', googleId)
-    .maybeSingle(); // ✅ no error even if user doesn't exist
+  const { error: upsertError } = await supabase.from('users').upsert([{
+    google_id: googleId,
+    supabase_user_id: authUser.id,
+    username,
+    avatar_url: avatar,
+    balance: 50,
+    bio: '',
+    streak: 0,
+    badges: [],
+    stocks: [],
+    transactions: [],
+    verified: false
+  }], {
+    onConflict: 'google_id'
+  });
 
-  if (!existingUser) {
-    const { error: insertErr } = await supabase.from('users').insert([{
-      google_id: googleId,
-      supabase_user_id: authUser.id,
-      username,
-      avatar_url: avatar,
-      balance: 50,
-      bio: '',
-      streak: 0,
-      badges: [],
-      stocks: [],
-      transactions: [],
-      verified: false
-    }]);
-
-    if (insertErr) {
-      alert('Insert error: ' + insertErr.message);
-      return;
-    }
+  if (upsertError) {
+    alert('Upsert error: ' + upsertError.message);
+    return;
   }
 
   document.getElementById('auth-block')?.remove();
   loadProfile(googleId);
 }
-
   function createAuthBlock() {
     const block = document.createElement('div');
     block.id = 'auth-block';
