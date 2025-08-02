@@ -3,574 +3,630 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiniTopia Utilities | Enhanced Control Panel</title>
+    <title>MiniTopia Stocks</title>
     <style>
         :root {
-            --primary-dark: #0a1128;
-            --primary-blue: #1a2a6c;
-            --accent-blue: #3a7bd5;
-            --highlight: #00d2ff;
-            --text-light: #f8f9fa;
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --text-primary: #ffffff;
+            --text-secondary: #bbbbbb;
+            --accent-color: #6e44ff;
+            --positive: #4caf50;
+            --negative: #f44336;
+            --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --transition-speed: 0.4s;
         }
-        
-        body {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary-blue));
-            color: var(--text-light);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+        [data-theme="light"] {
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --accent-color: #7c4dff;
+            --positive: #2e7d32;
+            --negative: #c62828;
+            --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            overflow-x: hidden;
-            min-height: 100vh;
+            box-sizing: border-box;
+            transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
         }
-        
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeIn 0.8s ease-out forwards;
         }
-        
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
+
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid rgba(58, 123, 213, 0.3);
             margin-bottom: 2rem;
+            animation: fadeInDown 0.8s ease;
         }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .logo-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(to right, var(--accent-blue), var(--highlight));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        .dashboard {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-        
-        .sidebar {
-            background: rgba(10, 17, 40, 0.7);
-            border-radius: 10px;
-            padding: 1.5rem;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transform: translateX(-20px);
-            opacity: 0;
-            animation: slideIn 0.6s ease-out 0.2s forwards;
-        }
-        
-        @keyframes slideIn {
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        .sidebar-item {
-            padding: 0.8rem 1rem;
-            margin: 0.5rem 0;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-        
-        .sidebar-item:hover {
-            background: rgba(58, 123, 213, 0.2);
-            transform: translateX(5px);
-        }
-        
-        .sidebar-item.active {
-            background: linear-gradient(to right, rgba(58, 123, 213, 0.4), transparent);
-            border-left: 3px solid var(--highlight);
-        }
-        
-        .main-content {
-            background: rgba(10, 17, 40, 0.7);
-            border-radius: 10px;
-            padding: 2rem;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transform: translateY(20px);
-            opacity: 0;
-            animation: slideUp 0.6s ease-out 0.4s forwards;
-        }
-        
-        @keyframes slideUp {
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-card {
-            background: rgba(26, 42, 108, 0.5);
-            border-radius: 8px;
-            padding: 1.5rem;
-            text-align: center;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(58, 123, 213, 0.2);
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 210, 255, 0.1);
-            border-color: rgba(0, 210, 255, 0.4);
-        }
-        
-        .stat-value {
+
+        h1 {
             font-size: 2.5rem;
-            font-weight: bold;
-            margin: 0.5rem 0;
-            background: linear-gradient(to right, var(--accent-blue), var(--highlight));
+            background: linear-gradient(90deg, var(--accent-color), #ff6b6b);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            font-weight: 800;
         }
-        
-        .command-list {
-            margin-top: 2rem;
-        }
-        
-        .command-item {
-            background: rgba(26, 42, 108, 0.3);
-            border-radius: 8px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-        }
-        
-        .command-item:hover {
-            background: rgba(26, 42, 108, 0.5);
-            border-left: 3px solid var(--highlight);
-            transform: translateX(5px);
-        }
-        
-        .toggle-switch {
+
+        .theme-toggle {
             position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-            float: right;
-        }
-        
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .slider {
-            position: absolute;
+            width: 60px;
+            height: 30px;
+            border-radius: 15px;
+            background-color: var(--bg-secondary);
+            box-shadow: var(--card-shadow);
             cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            padding: 0 5px;
+        }
+
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            left: 5px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        [data-theme="light"] .theme-toggle::before {
+            transform: translateX(30px);
+        }
+
+        .theme-icons {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            z-index: 1;
+        }
+
+        .theme-icons i {
+            font-size: 14px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeIn 0.6s ease;
+            will-change: transform;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .coin-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .coin-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .coin-symbol {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 2px;
+        }
+
+        .coin-price {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .price-change {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .positive {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: var(--positive);
+        }
+
+        .negative {
+            background-color: rgba(244, 67, 54, 0.2);
+            color: var(--negative);
+        }
+
+        .chart-container {
+            height: 100px;
+            margin: 1rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .chart-line {
+            position: absolute;
             bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
-        }
-        
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .slider {
-            background: linear-gradient(to right, var(--accent-blue), var(--highlight));
-        }
-        
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-        
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.7);
-            transform: scale(0);
-            animation: ripple 0.6s linear;
-            pointer-events: none;
-        }
-        
-        @keyframes ripple {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
-        
-        .floating-particles {
-            position: fixed;
-            top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none;
-            z-index: -1;
+            stroke-width: 2;
+            fill: none;
         }
-        
-        .particle {
-            position: absolute;
-            background: rgba(0, 210, 255, 0.5);
+
+        .market-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            animation: fadeIn 0.6s ease;
+        }
+
+        .stat-title {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .transactions {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            animation: fadeIn 0.6s ease;
+        }
+
+        .transactions h2 {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .transaction-list {
+            list-style: none;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.6s ease;
+        }
+
+        [data-theme="light"] .transaction-item {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .transaction-details {
+            display: flex;
+            align-items: center;
+        }
+
+        .transaction-icon {
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            animation: float linear infinite;
+            background-color: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1rem;
         }
-        
-        @keyframes float {
-            0% { transform: translateY(0) rotate(0deg); }
-            100% { transform: translateY(-100vh) rotate(360deg); }
+
+        .transaction-amount {
+            font-weight: 600;
+        }
+
+        .transaction-time {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-top: 2px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(110, 68, 255, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(110, 68, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(110, 68, 255, 0); }
+        }
+
+        .glow {
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 5px -5px var(--accent-color); }
+            to { box-shadow: 0 0 5px 5px var(--accent-color); }
+        }
+
+        /* Modern scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5a35e6;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .market-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body>
-    <div class="floating-particles" id="particles"></div>
-    
+<body data-theme="dark">
     <div class="container">
-  <header>
-    <div class="logo">
-      <div class="logo-icon">
-        <!-- Logo SVG here -->
-      </div>
-      <h1>MiniTopia Utilities</h1>
-    </div>
-    <div id="user-info" style="display: none;">
-      Logged in as <span id="user-name"></span>
-    </div>
-    <button id="login-button" style="display: none;">Login with Discord</button>
-    <button id="logout-button" style="display: none;">Logout</button>
-  </header>
+        <header>
+            <h1>Enhanced Crypto Simulator</h1>
+            <div class="theme-toggle" id="themeToggle">
+                <div class="theme-icons">
+                    <i class="fas fa-moon"></i>
+                    <i class="fas fa-sun"></i>
+                </div>
+            </div>
+        </header>
 
-  <div class="dashboard">
-    <div class="sidebar">
-      <div class="sidebar-item">Dashboard</div>
-      <div class="sidebar-item">Bot Settings</div>
-      <div class="sidebar-item">Commands</div>
-      <div class="sidebar-item">Modules</div>
-      <div class="sidebar-item">Logs</div>
-      <div class="sidebar-item">Advanced</div>
-    </div>
+        <div class="dashboard">
+            <!-- Enhanced Crypto Cards will be inserted here by JavaScript -->
+        </div>
 
-    <!-- Content Sections -->
-    <div class="main-content" id="dashboard-section">
-      <h2>Dashboard Overview</h2>
-      <p>Welcome back! Here's what's happening with your bot.</p>
-    </div>
+        <div class="market-stats">
+            <div class="stat-card pulse">
+                <div class="stat-title">Total Market Cap</div>
+                <div class="stat-value" id="marketCap">$1.72T</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">24h Volume</div>
+                <div class="stat-value" id="dailyVolume">$68.42B</div>
+            </div>
+            <div class="stat-card glow">
+                <div class="stat-title">BTC Dominance</div>
+                <div class="stat-value" id="btcDominance">42.8%</div>
+            </div>
+        </div>
 
-    <div class="main-content" id="settings-section" style="display: none;">
-      <h2>Bot Settings</h2>
-      <p>Edit your bot’s configuration here.</p>
-    </div>
-
-    <div class="main-content" id="commands-section" style="display: none;">
-  <h2>Commands</h2>
-  <p>Here are all the available bot commands:</p>
-
-  <ul>
-    <li><strong>!apply</strong> — Start a DM-based application process</li>
-    <li><strong>!sixb6tstats &lt;ign&gt;</strong> — Get stats from 6b6t API</li>
-    <li><strong>!antiraid &lt;on/off&gt;</strong> — Toggle anti-raid mode (admin)</li>
-    <li><strong>!invites [@member]</strong> — Show how many users a member invited</li>
-    <li><strong>!info</strong> — Show server info with join graph</li>
-    <li><strong>!balance [@member]</strong> — Check your or someone’s coin balance</li>
-    <li><strong>!daily</strong> — Claim 100 daily coins</li>
-    <li><strong>/givecoins &lt;user&gt; &lt;amount&gt;</strong> — Admin command to give coins</li>
-    <li><strong>/gcreate</strong> — Slash command to create giveaways (admin)</li>
-    <li><strong>!give @user &lt;amount&gt;</strong> — Transfer coins to another user</li>
-    <li><strong>!playerinfo [@user]</strong> — Show user’s server and Minecraft info</li>
-    <li><strong>!profile [@user]</strong> — View a full profile with inviter and verification status</li>
-    <li><strong>!enable_automod</strong> — Create an AutoMod rule for bad words</li>
-    <li><strong>!setup_verification</strong> — Set up verification in the verify channel</li>
-    <li><strong>!verify_user @user</strong> — Manually verify a user</li>
-    <li><strong>!verification_stats</strong> — Show current verification statistics</li>
-    <li><strong>!mcprofile [@user]</strong> — Show Minecraft profile for linked user</li>
-    <li><strong>!stats</strong> — Show internal bot stats</li>
-    <li><strong>!link &lt;username&gt; [--cracked]</strong> — Link Minecraft IGN to Discord account</li>
-    <li><strong>!resend_verification</strong> — Re-post the verification embed</li>
-  </ul>
-</div>
-
-
-  <div class="main-content" id="modules-section" style="display: none;">
-  <h2>Modules</h2>
-  <p>Enable or disable key bot features below:</p>
-
-  <div class="command-item" style="display: flex; justify-content: space-between; align-items: center;">
-    <div>
-      <strong>Anti-Raid</strong><br>
-      Automatically bans bots invited by non-trusted users.
-    </div>
-    <label class="toggle-switch">
-      <input type="checkbox" id="toggle-antiraid">
-      <span class="slider"></span>
-    </label>
-  </div>
-
-  <div class="command-item" style="display: flex; justify-content: space-between; align-items: center;">
-    <div>
-      <strong>Verification System</strong><br>
-      Verifies users via button in the verify-here channel.
-    </div>
-    <label class="toggle-switch">
-      <input type="checkbox" checked disabled>
-      <span class="slider"></span>
-    </label>
-  </div>
-
-  <div class="command-item" style="display: flex; justify-content: space-between; align-items: center;">
-    <div>
-      <strong>Giveaways</strong><br>
-      Enables giveaway creation, entry tracking, and winner selection.
-    </div>
-    <label class="toggle-switch">
-      <input type="checkbox" checked disabled>
-      <span class="slider"></span>
-    </label>
-  </div>
-
-  <div class="command-item" style="display: flex; justify-content: space-between; align-items: center;">
-    <div>
-      <strong>Economy System</strong><br>
-      Tracks user balances, daily rewards, and coin transfers.
-    </div>
-    <label class="toggle-switch">
-      <input type="checkbox" checked disabled>
-      <span class="slider"></span>
-    </label>
-  </div>
-
-  <div class="command-item" style="display: flex; justify-content: space-between; align-items: center;">
-    <div>
-      <strong>Invite Tracker</strong><br>
-      Tracks who invited whom using server invites.
-    </div>
-    <label class="toggle-switch">
-      <input type="checkbox" checked disabled>
-      <span class="slider"></span>
-    </label>
-  </div>
-</div>
-
-
-    <div class="main-content" id="logs-section" style="display: none;">
-      <h2>Logs</h2>
-      <p>View recent bot logs.</p>
+        <div class="transactions">
+            <h2>Recent Transactions</h2>
+            <ul class="transaction-list" id="transactionList">
+                <!-- Transactions will be inserted here by JavaScript -->
+            </ul>
+        </div>
     </div>
 
-    <div class="main-content" id="advanced-section" style="display: none;">
-      <h2>Advanced</h2>
-      <p>Access advanced tools and settings.</p>
-    </div>
-  </div>
-</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Theme toggle functionality
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+            
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = body.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                body.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                
+                // Add animation class
+                themeToggle.classList.add('animate-theme-change');
+                setTimeout(() => {
+                    themeToggle.classList.remove('animate-theme-change');
+                }, 500);
+            });
+            
+            // Check for saved theme preference
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            body.setAttribute('data-theme', savedTheme);
 
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+            // Enhanced crypto data
+            const enhancedCryptos = [
+                {
+                    name: "QuantumCoin",
+                    symbol: "QTC",
+                    price: 2453.78,
+                    change: 5.42,
+                    icon: "fa-atom",
+                    color: "#6e44ff",
+                    chartData: generateChartData(5.42)
+                },
+                {
+                    name: "NeuralToken",
+                    symbol: "NRL",
+                    price: 187.65,
+                    change: -2.31,
+                    icon: "fa-brain",
+                    color: "#ff6b6b",
+                    chartData: generateChartData(-2.31)
+                },
+                {
+                    name: "EtherX",
+                    symbol: "ETX",
+                    price: 3421.90,
+                    change: 8.75,
+                    icon: "fa-ethereum",
+                    color: "#4cc9f0",
+                    chartData: generateChartData(8.75)
+                },
+                {
+                    name: "BitVault",
+                    symbol: "BTV",
+                    price: 68924.50,
+                    change: -1.15,
+                    icon: "fa-bitcoin-sign",
+                    color: "#f8961e",
+                    chartData: generateChartData(-1.15)
+                },
+                {
+                    name: "AICoin",
+                    symbol: "AIC",
+                    price: 132.45,
+                    change: 12.63,
+                    icon: "fa-robot",
+                    color: "#43aa8b",
+                    chartData: generateChartData(12.63)
+                },
+                {
+                    name: "SolarToken",
+                    symbol: "SLR",
+                    price: 56.78,
+                    change: 3.21,
+                    icon: "fa-solar-panel",
+                    color: "#f9c74f",
+                    chartData: generateChartData(3.21)
+                }
+            ];
 
-<script>
-const supabaseClient = window.supabase.createClient(
-  'https://rdomgvvjbjfrvkbhjxds.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54'
-);
+            // Generate random chart data based on price change direction
+            function generateChartData(change) {
+                const data = [];
+                const base = Math.random() * 50 + 50;
+                const direction = change >= 0 ? 1 : -1;
+                
+                for (let i = 0; i < 20; i++) {
+                    const value = base + direction * (Math.random() * 15 + i * 2);
+                    data.push(value);
+                }
+                
+                return data;
+            }
 
+            // Render crypto cards
+            const dashboard = document.querySelector('.dashboard');
+            
+            enhancedCryptos.forEach((crypto, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.animationDelay = `${index * 0.1}s`;
+                
+                const changeClass = crypto.change >= 0 ? 'positive' : 'negative';
+                const changeIcon = crypto.change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="coin-icon" style="background-color: ${crypto.color}20; color: ${crypto.color}">
+                            <i class="fas ${crypto.icon}"></i>
+                        </div>
+                        <div>
+                            <div class="coin-name">${crypto.name}</div>
+                            <div class="coin-symbol">${crypto.symbol}</div>
+                        </div>
+                    </div>
+                    <div class="coin-price">$${crypto.price.toLocaleString()}</div>
+                    <div class="price-change ${changeClass}">
+                        <i class="fas ${changeIcon}"></i> ${Math.abs(crypto.change)}%
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart">
+                            <svg viewBox="0 0 100 50" class="chart-line" style="stroke: ${crypto.color}">
+                                ${generateChartPath(crypto.chartData)}
+                            </svg>
+                        </div>
+                    </div>
+                `;
+                
+                dashboard.appendChild(card);
+            });
 
-  // ✅ Discord OAuth2 info
-  const DISCORD_CLIENT_ID = "1397532697655775282";
-  const REDIRECT_URI = window.location.origin;
-  const SCOPES = "identify guilds";
-  const AUTH_URL = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=${SCOPES}`;
+            // Generate SVG path for chart
+            function generateChartPath(data) {
+                const normalizedData = normalizeData(data);
+                let path = `M 0 ${50 - normalizedData[0]}`;
+                
+                for (let i = 1; i < normalizedData.length; i++) {
+                    path += ` L ${i * (100 / (normalizedData.length - 1))} ${50 - normalizedData[i]}`;
+                }
+                
+                return `<path d="${path}" fill="none" stroke-linecap="round" stroke-linejoin="round" />`;
+            }
 
-  // ✅ Elements
-  const loginBtn = document.getElementById("login-button");
-  const logoutBtn = document.getElementById("logout-button");
-  const usernameDisplay = document.getElementById("user-name");
+            // Normalize data to fit in 0-50 range
+            function normalizeData(data) {
+                const min = Math.min(...data);
+                const max = Math.max(...data);
+                const range = max - min;
+                
+                return data.map(value => {
+                    return range !== 0 ? ((value - min) / range) * 45 + 2.5 : 25;
+                });
+            }
 
-  // ✅ Handle login redirect
-  function handleDiscordLogin() {
-    window.location.href = AUTH_URL;
-  }
+            // Generate random transactions
+            const transactionList = document.getElementById('transactionList');
+            const transactionTypes = ['buy', 'sell', 'transfer', 'swap'];
+            const transactionIcons = {
+                'buy': 'fa-arrow-down',
+                'sell': 'fa-arrow-up',
+                'transfer': 'fa-exchange-alt',
+                'swap': 'fa-random'
+            };
+            const transactionColors = {
+                'buy': '#4caf50',
+                'sell': '#f44336',
+                'transfer': '#2196f3',
+                'swap': '#9c27b0'
+            };
+            
+            for (let i = 0; i < 5; i++) {
+                const type = transactionTypes[Math.floor(Math.random() * transactionTypes.length)];
+                const crypto = enhancedCryptos[Math.floor(Math.random() * enhancedCryptos.length)];
+                const amount = (Math.random() * 5 + 0.1).toFixed(2);
+                const value = (amount * crypto.price).toFixed(2);
+                const time = `${Math.floor(Math.random() * 12) + 1}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')} ${Math.random() > 0.5 ? 'AM' : 'PM'}`;
+                
+                const transaction = document.createElement('li');
+                transaction.className = 'transaction-item';
+                transaction.style.animationDelay = `${i * 0.1}s`;
+                
+                transaction.innerHTML = `
+                    <div class="transaction-details">
+                        <div class="transaction-icon" style="background-color: ${transactionColors[type]}20; color: ${transactionColors[type]}">
+                            <i class="fas ${transactionIcons[type]}"></i>
+                        </div>
+                        <div>
+                            <div class="transaction-type">${type.charAt(0).toUpperCase() + type.slice(1)} ${crypto.symbol}</div>
+                            <div class="transaction-time">${time}</div>
+                        </div>
+                    </div>
+                    <div class="transaction-amount" style="color: ${type === 'buy' ? 'var(--positive)' : type === 'sell' ? 'var(--negative)' : 'var(--accent-color)'}">
+                        ${type === 'buy' ? '+' : type === 'sell' ? '-' : ''}${amount} ${crypto.symbol} ($${value})
+                    </div>
+                `;
+                
+                transactionList.appendChild(transaction);
+            }
 
-  // ✅ Get token from URL hash
-  function getTokenFromHash() {
-    const hash = window.location.hash;
-    if (!hash) return null;
-    const params = new URLSearchParams(hash.substring(1));
-    return params.get("access_token");
-  }
+            // Animate market stats
+            function animateMarketStats() {
+                const marketCap = document.getElementById('marketCap');
+                const dailyVolume = document.getElementById('dailyVolume');
+                const btcDominance = document.getElementById('btcDominance');
+                
+                // Random fluctuations
+                const marketCapValue = 1.72 + (Math.random() * 0.1 - 0.05);
+                const volumeValue = 68.42 + (Math.random() * 5 - 2.5);
+                const dominanceValue = 42.8 + (Math.random() * 1 - 0.5);
+                
+                marketCap.textContent = `$${marketCapValue.toFixed(2)}T`;
+                dailyVolume.textContent = `$${volumeValue.toFixed(2)}B`;
+                btcDominance.textContent = `${dominanceValue.toFixed(1)}%`;
+                
+                setTimeout(animateMarketStats, 3000);
+            }
+            
+            animateMarketStats();
 
-  // ✅ Fetch user info
-  async function fetchDiscordUser(token) {
-    const res = await fetch("https://discord.com/api/users/@me", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  }
-
-  // ✅ Logout
-  function logout() {
-    localStorage.removeItem("discord_token");
-    location.reload();
-  }
-
-  // ✅ Init app
-  async function init() {
-    // Try load from localStorage first
-    let token = localStorage.getItem("discord_token");
-
-    // If not in localStorage, check URL hash
-    if (!token) {
-      token = getTokenFromHash();
-      if (token) {
-        localStorage.setItem("discord_token", token);
-        window.location.hash = ""; // clean URL
-      }
-    }
-
-    if (!token) {
-      loginBtn.style.display = "block";
-      logoutBtn.style.display = "none";
-      return;
-    }
-
-    // Try to get user
-    const user = await fetchDiscordUser(token);
-    if (!user) {
-      logout();
-      return;
-    }
-
-    // Show user info
-    document.getElementById("user-info").style.display = "flex";
-    usernameDisplay.textContent = user.username + "#" + user.discriminator;
-    loginBtn.style.display = "none";
-    logoutBtn.style.display = "block";
-
-    // Optional: You could now use Supabase to read user settings:
-    // const { data, error } = await supabase.from('users').select('*').eq('id', user.id)
-  }
-
-  // Hook buttons
-  loginBtn?.addEventListener("click", handleDiscordLogin);
-  logoutBtn?.addEventListener("click", logout);
-
-    const sections = {
-  "": "dashboard-section",
-  "#dashboard": "dashboard-section",
-  "#commands": "commands-section",
-  "#modules": "modules-section",
-  "#settings": "settings-section",
-  "#logs": "logs-section",
-  "#advanced": "advanced-section",
-};
-
-function showSection() {
-  const hash = window.location.hash || "#dashboard";
-  const targetId = sections[hash] || "dashboard-section";
-
-  document.querySelectorAll('.main-content').forEach(section => {
-    section.style.display = 'none';
-  });
-  document.getElementById(targetId).style.display = 'block';
-
-  document.querySelectorAll('.sidebar-item').forEach(item => {
-    item.classList.remove('active');
-  });
-
-  const sidebarMap = {
-    "#dashboard": 0,
-    "#settings": 1,
-    "#commands": 2,
-    "#modules": 3,
-    "#logs": 4,
-    "#advanced": 5,
-  };
-
-  const index = sidebarMap[hash] ?? 0;
-  document.querySelectorAll('.sidebar-item')[index]?.classList.add('active');
-}
-
-// Run on load + on hash change
-window.addEventListener("hashchange", showSection);
-window.addEventListener("DOMContentLoaded", showSection);
-
-// Optional: make sidebar clicks update hash
-document.querySelectorAll('.sidebar-item').forEach((item, idx) => {
-  item.addEventListener("click", () => {
-    const hashList = ["#dashboard", "#settings", "#commands", "#modules", "#logs", "#advanced"];
-    window.location.hash = hashList[idx];
-  });
-});
-
-     document.getElementById("toggle-antiraid")?.addEventListener("change", async (e) => {
-    const enabled = e.target.checked;
-    const token = localStorage.getItem("discord_token");
-    if (!token) return alert("Not logged in.");
-
-    const res = await fetch("http://kiwi.fps.ms:10638/api/antiraid", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({ enabled })
-    });
-
-    if (!res.ok) {
-      alert("Failed to update Anti-Raid setting");
-    }
-  });
-
-  // Start
-  init();
-</script>
+            // Add hover effects to all cards
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
+                });
+            });
+        });
+    </script>
 </body>
 </html>
