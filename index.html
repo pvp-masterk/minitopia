@@ -555,7 +555,7 @@ document.querySelectorAll('.sidebar-item').forEach((item, idx) => {
     const token = localStorage.getItem("discord_token");
     if (!token) return alert("Not logged in.");
 
-    const res = await fetch("/api/antiraid", {
+    const res = await fetch("http://kiwi.fps.ms:10638/api/antiraid", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
