@@ -752,306 +752,194 @@
         </div>
     </div>
 
-    <script type="module">
+   <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase = createClient('https://rdomgvvjbjfrvkbhjxds.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54');
 
-let currentCrypto = null;
 let currentUser = null;
+let currentCrypto = null;
 let balanceDisplay = null;
 
 function showToast(msg, color = 'var(--accent-color)') {
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = msg;
-    toast.style.background = color;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3400);
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  toast.style.background = color;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3400);
 }
 
+// Ensure user exists and fetch balance
 async function loadUserHeader() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return;
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) return;
 
-    const { data: { user } } = await supabase.auth.getUser();
-    currentUser = user;
+  currentUser = session.user;
 
-    const user_id = user.id;
-    const username = user.user_metadata.full_name;
-    const avatar = user.user_metadata.avatar_url;
+  const user_id = currentUser.id;
+  const username = currentUser.user_metadata.full_name;
+  const avatar = currentUser.user_metadata.avatar_url;
 
-    // Upsert user with default balance of 50 if not present
-    // Check if user exists
-const { data: existingUser } = await supabase.from('users').select('balance').eq('id', user_id).single();
+  // Ensure user row exists with default balance
+  const { data: userRow, error } = await supabase
+    .from('users')
+    .select('balance')
+    .eq('id', user_id)
+    .single();
 
-await supabase.from('users').upsert({
-    id: user_id,
-    username,
-    avatar_url: avatar,
-    balance: existingUser?.balance ?? 50
-});
+  if (!userRow) {
+    await supabase.from('users').insert({
+      id: user_id,
+      username,
+      avatar_url: avatar,
+      balance: 50
+    });
+  }
 
-    const userBox = document.createElement('div');
-    userBox.style.display = 'flex';
-    userBox.style.alignItems = 'center';
-    userBox.style.gap = '10px';
+  const userBox = document.createElement('div');
+  userBox.style.display = 'flex';
+  userBox.style.alignItems = 'center';
+  userBox.style.gap = '10px';
 
-    balanceDisplay = document.createElement('span');
-    balanceDisplay.style.marginRight = '10px';
-    balanceDisplay.textContent = 'Balance: $...';
+  balanceDisplay = document.createElement('span');
+  balanceDisplay.style.marginRight = '10px';
+  balanceDisplay.textContent = 'Balance: $...';
 
-    userBox.innerHTML = `
-        <img src="${avatar}" alt="avatar" style="width:40px;height:40px;border-radius:50%">
-        <span>${username}</span>
-        <a href="/profile.html?id=${user_id}" style="background:var(--accent-color);color:white;padding:0.4rem 0.8rem;border-radius:6px;text-decoration:none;">View Profile</a>
-    `;
-    userBox.prepend(balanceDisplay);
-    document.querySelector('header')?.appendChild(userBox);
+  userBox.innerHTML = `
+    <img src="${avatar}" alt="avatar" style="width:40px;height:40px;border-radius:50%">
+    <span>${username}</span>
+    <a href="/profile.html?id=${user_id}" style="background:var(--accent-color);color:white;padding:0.4rem 0.8rem;border-radius:6px;text-decoration:none;">View Profile</a>
+  `;
+  userBox.prepend(balanceDisplay);
+  document.querySelector('header')?.appendChild(userBox);
 
-    updateBalanceDisplay();
+  await updateBalanceDisplay();
 }
 
 async function updateBalanceDisplay() {
-    if (!currentUser || !balanceDisplay) return;
-    const { data, error } = await supabase
-        .from('users')
-        .select('balance')
-        .eq('id', currentUser.id)
-        .single();
+  if (!currentUser || !balanceDisplay) return;
+  const { data, error } = await supabase
+    .from('users')
+    .select('balance')
+    .eq('id', currentUser.id)
+    .single();
 
-    if (error || data === null) {
-        balanceDisplay.textContent = `Balance: $0.00`;
-        return;
-    }
-
-    balanceDisplay.textContent = `Balance: $${(+data.balance).toFixed(2)}`;
+  const balance = data?.balance ?? 0;
+  balanceDisplay.textContent = `Balance: $${(+balance).toFixed(2)}`;
 }
 
-// Theme toggle
+// ==== Chart helpers ====
+function generateDetailedChartData(change) {
+  const data = [];
+  const base = Math.random() * 50 + 50;
+  const direction = change >= 0 ? 1 : -1;
+  const volatility = 2 + Math.random() * 3;
+  for (let i = 0; i < 20; i++) {
+    data.push(base + direction * (Math.random() * volatility + i * 0.1));
+  }
+  return data;
+}
+function normalizeData(data) {
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  return data.map(val => {
+    return max - min === 0 ? 25 : ((val - min) / (max - min)) * 45 + 2.5;
+  });
+}
+function generateChartPath(data) {
+  const norm = normalizeData(data);
+  return norm.reduce((path, val, i) => path + ` L ${i * (100 / (norm.length - 1))} ${50 - val}`, `M 0 ${50 - norm[0]}`);
+}
+
+// ==== Dummy coins ====
+const enhancedCryptos = [
+  { name: "QuantumCoin", symbol: "QTC", price: 2453.78, change: 5.42, icon: "fa-atom", color: "#3a86ff", marketCap: "18.7B", volume: "1.2B", description: "QuantumCoin utilizes quantum-resistant algorithms..." },
+  { name: "NeuralToken", symbol: "NRL", price: 187.65, change: -2.31, icon: "fa-brain", color: "#f72585", marketCap: "4.2B", volume: "320M", description: "NeuralToken powers decentralized AI networks..." },
+  { name: "EtherX", symbol: "ETX", price: 3421.90, change: 8.75, icon: "fa-ethereum", color: "#4cc9f0", marketCap: "41.5B", volume: "2.8B", description: "EtherX is an EVM-compatible blockchain..." },
+  { name: "BitVault", symbol: "BTV", price: 68924.50, change: -1.15, icon: "fa-bitcoin-sign", color: "#f8961e", marketCap: "1.3T", volume: "28.4B", description: "BitVault introduces programmable scarcity..." }
+];
+
+function renderCryptos() {
+  const dashboard = document.querySelector('.dashboard');
+  enhancedCryptos.forEach((crypto, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.animationDelay = `${i * 0.1}s`;
+
+    const chartData = generateDetailedChartData(crypto.change);
+    const chartPath = generateChartPath(chartData);
+    const changeClass = crypto.change >= 0 ? 'positive' : 'negative';
+    const changeIcon = crypto.change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+
+    card.innerHTML = `
+      <div class="card-header">
+        <div class="coin-icon" style="background-color: ${crypto.color}20; color: ${crypto.color}">
+          <i class="fas ${crypto.icon}"></i>
+        </div>
+        <div>
+          <div class="coin-name">${crypto.name}</div>
+          <div class="coin-symbol">${crypto.symbol}</div>
+        </div>
+      </div>
+      <div class="coin-price">$${crypto.price.toLocaleString()}</div>
+      <div class="price-change ${changeClass}">
+        <i class="fas ${changeIcon}"></i> ${Math.abs(crypto.change)}%
+      </div>
+      <div class="chart-container">
+        <div class="chart">
+          <svg viewBox="0 0 100 50" class="chart-line" style="stroke: ${crypto.color}">
+            <path d="${chartPath}" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+      </div>
+    `;
+
+    card.onclick = () => openModal(crypto);
+    dashboard.appendChild(card);
+  });
+}
+
+// Modal setup
+function openModal(crypto) {
+  currentCrypto = crypto;
+  const modal = document.getElementById('stockModal');
+  document.getElementById('modalStockName').textContent = crypto.name;
+  document.getElementById('modalStockSymbol').textContent = crypto.symbol;
+  document.getElementById('modalStockPrice').textContent = `$${crypto.price}`;
+  document.getElementById('modalStockChange').innerHTML = `<span class="${crypto.change >= 0 ? 'positive' : 'negative'}"><i class="fas ${crypto.change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'}"></i> ${Math.abs(crypto.change)}%</span>`;
+  document.getElementById('modalStockMarketCap').textContent = `$${crypto.marketCap}`;
+  document.getElementById('modalStockVolume').textContent = `$${crypto.volume}`;
+  document.getElementById('modalStockDescription').textContent = crypto.description;
+
+  const icon = document.getElementById('modalStockIcon');
+  icon.innerHTML = `<i class="fas ${crypto.icon}" style="color: ${crypto.color}"></i>`;
+  icon.style.backgroundColor = `${crypto.color}20`;
+
+  const data = generateDetailedChartData(crypto.change);
+  const path = generateChartPath(data);
+  document.getElementById('modalStockChart').innerHTML = `
+    <svg viewBox="0 0 100 50" class="chart-line" style="stroke: ${crypto.color}">
+      <path d="${path}" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  `;
+
+  document.getElementById('stockModal').classList.add('active');
+  document.getElementById('tradeAmount').value = '';
+}
+
 document.getElementById('themeToggle').addEventListener('click', () => {
-    const theme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    document.body.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-    showToast(`Switched to ${theme} mode`);
+  const theme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  showToast(`Switched to ${theme} mode`);
 });
 document.body.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
 
-// Chart generation
-function generateDetailedChartData(change) {
-    const data = [];
-    const base = Math.random() * 50 + 50;
-    const direction = change >= 0 ? 1 : -1;
-    const volatility = Math.random() * 10 + 5;
-    for (let i = 0; i < 100; i++) {
-        data.push(base + direction * (Math.random() * volatility + i * 0.5));
-    }
-    return data;
-}
-function normalizeData(data) {
-    const min = Math.min(...data), max = Math.max(...data);
-    return data.map(v => max - min !== 0 ? ((v - min) / (max - min)) * 45 + 2.5 : 25);
-}
-function generateChartPath(data) {
-    const norm = normalizeData(data);
-    return norm.reduce((p, v, i) => p + ` L ${i * (100 / (norm.length - 1))} ${50 - v}`, `M 0 ${50 - norm[0]}`);
-}
-
-// Dummy crypto list
-const enhancedCryptos = [
-    { name: "QuantumCoin", symbol: "QTC", price: 2453.78, change: 5.42, icon: "fa-atom", color: "#3a86ff", marketCap: "18.7B", volume: "1.2B", description: "QuantumCoin utilizes quantum-resistant algorithms..." },
-    { name: "NeuralToken", symbol: "NRL", price: 187.65, change: -2.31, icon: "fa-brain", color: "#f72585", marketCap: "4.2B", volume: "320M", description: "NeuralToken powers decentralized AI networks..." },
-    { name: "EtherX", symbol: "ETX", price: 3421.90, change: 8.75, icon: "fa-ethereum", color: "#4cc9f0", marketCap: "41.5B", volume: "2.8B", description: "EtherX is an EVM-compatible blockchain..." },
-    { name: "BitVault", symbol: "BTV", price: 68924.50, change: -1.15, icon: "fa-bitcoin-sign", color: "#f8961e", marketCap: "1.3T", volume: "28.4B", description: "BitVault introduces programmable scarcity..." },
-    { name: "AICoin", symbol: "AIC", price: 132.45, change: 12.63, icon: "fa-robot", color: "#43aa8b", marketCap: "9.8B", volume: "850M", description: "AICoin is the native currency of AI marketplace..." },
-    { name: "SolarToken", symbol: "SLR", price: 56.78, change: 3.21, icon: "fa-solar-panel", color: "#f9c74f", marketCap: "2.1B", volume: "180M", description: "SolarToken tracks and monetizes renewable energy..." }
-];
-
-// Render dashboard
-function renderCryptos() {
-    const dashboard = document.querySelector('.dashboard');
-    enhancedCryptos.forEach((crypto, i) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.style.animationDelay = `${i * 0.1}s`;
-        const changeClass = crypto.change >= 0 ? 'positive' : 'negative';
-        const changeIcon = crypto.change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
-        const chartData = generateDetailedChartData(crypto.change).slice(80);
-        const detailedData = generateDetailedChartData(crypto.change).slice(80);
-        const chartPath = generateChartPath(detailedData);
-
-        card.innerHTML = `
-            <div class="card-header">
-                <div class="coin-icon" style="background-color: ${crypto.color}20; color: ${crypto.color}">
-                    <i class="fas ${crypto.icon}"></i>
-                </div>
-                <div>
-                    <div class="coin-name">${crypto.name}</div>
-                    <div class="coin-symbol">${crypto.symbol}</div>
-                </div>
-            </div>
-            <div class="coin-price">$${crypto.price.toLocaleString()}</div>
-            <div class="price-change ${changeClass}">
-                <i class="fas ${changeIcon}"></i> ${Math.abs(crypto.change)}%
-            </div>
-            <div class="chart-container">
-                <div class="chart">
-                    <svg viewBox="0 0 100 50" class="chart-line" style="stroke: ${crypto.color}">
-                        <path d="${chartPath}" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                </div>
-            </div>
-        `;
-        dashboard.appendChild(card);
-    });
-    setupModal();
-}
-
-// Modal
-function setupModal() {
-    const modal = document.getElementById('stockModal');
-    const closeBtn = document.getElementById('modalClose');
-    const buyBtn = document.querySelector('.modal-btn-buy');
-    const sellBtn = document.querySelector('.modal-btn-sell');
-
-    closeBtn.onclick = () => modal.classList.remove('active');
-    modal.onclick = e => { if (e.target === modal) modal.classList.remove('active'); };
-
-    buyBtn.onclick = () => handleTrade('Buy');
-    sellBtn.onclick = () => handleTrade('Sell');
-
-    const input = document.createElement('input');
-    input.type = 'number';
-    input.id = 'tradeAmount';
-    input.min = '0.01';
-    input.placeholder = 'Amount';
-    input.style.marginTop = '10px';
-    input.style.padding = '0.6rem';
-    input.style.borderRadius = '8px';
-    input.style.border = '1px solid #ccc';
-    input.style.width = '100%';
-    input.style.gridColumn = '1 / -1';
-    modal.querySelector('.modal-body').appendChild(input);
-
-    document.querySelectorAll('.card').forEach((card, i) => {
-        card.onclick = () => openModal(enhancedCryptos[i]);
-    });
-}
-
-function openModal(crypto) {
-    currentCrypto = crypto;
-    const modal = document.getElementById('stockModal');
-    document.getElementById('modalStockName').textContent = crypto.name;
-    document.getElementById('modalStockSymbol').textContent = crypto.symbol;
-    document.getElementById('modalStockPrice').textContent = `$${crypto.price}`;
-    document.getElementById('modalStockChange').innerHTML = `<span class="${crypto.change >= 0 ? 'positive' : 'negative'}"><i class="fas ${crypto.change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'}"></i> ${Math.abs(crypto.change)}%</span>`;
-    document.getElementById('modalStockMarketCap').textContent = `$${crypto.marketCap}`;
-    document.getElementById('modalStockVolume').textContent = `$${crypto.volume}`;
-    document.getElementById('modalStockDescription').textContent = crypto.description;
-
-    const icon = document.getElementById('modalStockIcon');
-    icon.innerHTML = `<i class="fas ${crypto.icon}" style="color: ${crypto.color}"></i>`;
-    icon.style.backgroundColor = `${crypto.color}20`;
-
-    const chartPath = generateChartPath(generateDetailedChartData(crypto.change));
-    document.getElementById('modalStockChart').innerHTML = `
-        <svg viewBox="0 0 100 50" class="chart-line" style="stroke: ${crypto.color}">
-            <path d="${chartPath}" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-    `;
-
-    modal.classList.add('active');
-    document.getElementById('tradeAmount').value = '';
-}
-
-// Handle buy/sell
-async function handleTrade(type) {
-    if (!currentCrypto || !currentUser) return;
-    const btn = document.querySelector(`.modal-btn-${type.toLowerCase()}`);
-    const amount = parseFloat(document.getElementById('tradeAmount').value);
-    if (isNaN(amount) || amount <= 0) return showToast("Enter valid amount", "var(--negative)");
-
-    btn.textContent = `${type}ing...`;
-    btn.disabled = true;
-
-    const value = +(currentCrypto.price * amount).toFixed(2);
-    const { data: userData } = await supabase.from('users').select('*').eq('id', currentUser.id).single();
-    let balance = userData?.balance ?? 0;
-
-    if (type === 'Buy' && balance < value) {
-        showToast("Insufficient balance", "var(--negative)");
-    } else {
-        if (type === 'Buy') balance -= value;
-        if (type === 'Sell') balance += value;
-
-        await supabase.from('users').update({ balance }).eq('id', currentUser.id);
-        await supabase.from('transactions').insert({
-            user_id: currentUser.id,
-            username: currentUser.user_metadata.full_name,
-            avatar_url: currentUser.user_metadata.avatar_url,
-            type,
-            coin_symbol: currentCrypto.symbol,
-            amount,
-            value
-        });
-
-        showToast(`${type}ed ${amount} ${currentCrypto.symbol}`, "var(--positive)");
-        fetchAndRenderTransactions();
-        updateBalanceDisplay();
-    }
-
-    btn.textContent = type;
-    btn.disabled = false;
-}
-
-// Render transactions
-async function fetchAndRenderTransactions() {
-    const { data } = await supabase
-        .from('transactions')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-    const list = document.getElementById('transactionList');
-    list.innerHTML = '';
-    data.forEach(tx => {
-        const crypto = enhancedCryptos.find(c => c.symbol === tx.coin_symbol);
-        const item = document.createElement('li');
-        item.className = 'transaction-item';
-        item.innerHTML = `
-            <div class="transaction-details">
-                <div class="transaction-icon" style="background-color:${crypto?.color ?? '#888'}20;">
-                    <img src="${tx.avatar_url}" style="width:24px;height:24px;border-radius:50%"></div>
-                <div>
-                    <div><strong>${tx.username}</strong> ${tx.type} ${tx.amount} ${tx.coin_symbol}</div>
-                    <div class="transaction-time">${new Date(tx.created_at).toLocaleString()}</div>
-                </div>
-            </div>
-            <div class="transaction-amount" style="color:${tx.type === 'Buy' ? 'var(--positive)' : 'var(--negative)'}">
-                $${tx.value}
-            </div>
-        `;
-        list.appendChild(item);
-    });
-}
-
-// Live stats
-setInterval(() => {
-    ['marketCap', 'dailyVolume', 'btcDominance'].forEach(id => {
-        const el = document.getElementById(id);
-        const val = parseFloat(el.textContent.replace(/[^0-9.]/g, ''));
-        let newVal = val;
-        if (id === 'btcDominance') newVal += Math.random() * 0.5 - 0.25;
-        else newVal *= 1 + (Math.random() * 0.02 - 0.01);
-        el.textContent = id === 'btcDominance' ? `${newVal.toFixed(2)}%` : `$${newVal.toFixed(2)}B`;
-    });
-}, 10000);
-
 // Init
 document.addEventListener('DOMContentLoaded', async () => {
-    await loadUserHeader();
-    renderCryptos();
-    fetchAndRenderTransactions();
+  await loadUserHeader();
+  renderCryptos();
 });
 </script>
 
