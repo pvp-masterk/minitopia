@@ -660,8 +660,11 @@
       .eq('google_id', googleId)
       .single();
 
-    const { error: upsertErr } = await supabase.from('users').upsert([{
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+
+const { error: upsertErr } = await supabase.from('users').upsert([{
   google_id: googleId,
+  supabase_user_id: authUser.id,
   username,
   avatar_url: avatar,
   balance: 50,
