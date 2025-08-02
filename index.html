@@ -660,22 +660,20 @@
       .eq('google_id', googleId)
       .single();
 
-    if (!existing) {
-      const { error: insertErr } = await supabase.from('users').insert([{
-        google_id: googleId,
-        username,
-        avatar_url: avatar,
-        balance: 50,
-        bio: '',
-        streak: 0,
-        badges: [],
-        stocks: [],
-        transactions: [],
-        verified: false
-      }]);
+    const { error: upsertErr } = await supabase.from('users').upsert([{
+  google_id: googleId,
+  username,
+  avatar_url: avatar,
+  balance: 50,
+  bio: '',
+  streak: 0,
+  badges: [],
+  stocks: [],
+  transactions: [],
+  verified: false
+}], { onConflict: 'google_id' });
 
-      if (insertErr) return alert('Insert error: ' + insertErr.message);
-    }
+if (upsertErr) return alert('Upsert error: ' + upsertErr.message);
 
     document.getElementById('auth-block')?.remove();
     loadProfile(googleId);
