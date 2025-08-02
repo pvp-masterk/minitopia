@@ -757,7 +757,10 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient('https://rdomgvvjbjfrvkbhjxds.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54');
 
-// Toast Message
+let currentCrypto = null;
+let currentUser = null;
+let balanceDisplay = null;
+
 function showToast(msg, color = 'var(--accent-color)') {
     const toast = document.createElement('div');
     toast.className = 'toast';
@@ -767,42 +770,60 @@ function showToast(msg, color = 'var(--accent-color)') {
     setTimeout(() => toast.remove(), 3400);
 }
 
-// Load user header
 async function loadUserHeader() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return;
 
     const { data: { user } } = await supabase.auth.getUser();
-    const googleId = user.user_metadata.sub;
+    currentUser = user;
+
+    const user_id = user.id;
     const username = user.user_metadata.full_name;
     const avatar = user.user_metadata.avatar_url;
+
+    // Upsert user into users table
+    await supabase.from('users').upsert({
+        id: user_id,
+        username,
+        avatar_url: avatar
+    });
 
     const userBox = document.createElement('div');
     userBox.style.display = 'flex';
     userBox.style.alignItems = 'center';
     userBox.style.gap = '10px';
+
+    balanceDisplay = document.createElement('span');
+    balanceDisplay.style.marginRight = '10px';
+    balanceDisplay.textContent = 'Balance: $...';
+
     userBox.innerHTML = `
         <img src="${avatar}" alt="avatar" style="width:40px;height:40px;border-radius:50%">
         <span>${username}</span>
-        <a href="/profile.html?id=${googleId}" style="background:var(--accent-color);color:white;padding:0.4rem 0.8rem;border-radius:6px;text-decoration:none;">View Profile</a>
+        <a href="/profile.html?id=${user_id}" style="background:var(--accent-color);color:white;padding:0.4rem 0.8rem;border-radius:6px;text-decoration:none;">View Profile</a>
     `;
-
+    userBox.prepend(balanceDisplay);
     document.querySelector('header')?.appendChild(userBox);
+
+    updateBalanceDisplay();
 }
-loadUserHeader();
+
+async function updateBalanceDisplay() {
+    if (!currentUser || !balanceDisplay) return;
+    const { data } = await supabase.from('users').select('balance').eq('id', currentUser.id).single();
+    balanceDisplay.textContent = `Balance: $${(data?.balance ?? 0).toFixed(2)}`;
+}
 
 // Theme toggle
-const themeToggle = document.getElementById('themeToggle');
-themeToggle.addEventListener('click', () => {
-    const current = document.body.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
-    document.body.setAttribute('data-theme', next);
-    localStorage.setItem('theme', next);
-    showToast(`Switched to ${next} mode`);
+document.getElementById('themeToggle').addEventListener('click', () => {
+    const theme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    showToast(`Switched to ${theme} mode`);
 });
 document.body.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
 
-// Utility chart functions
+// Chart generation
 function generateDetailedChartData(change) {
     const data = [];
     const base = Math.random() * 50 + 50;
@@ -822,7 +843,7 @@ function generateChartPath(data) {
     return norm.reduce((p, v, i) => p + ` L ${i * (100 / (norm.length - 1))} ${50 - v}`, `M 0 ${50 - norm[0]}`);
 }
 
-// Crypto Data
+// Dummy crypto list
 const enhancedCryptos = [
     { name: "QuantumCoin", symbol: "QTC", price: 2453.78, change: 5.42, icon: "fa-atom", color: "#3a86ff", marketCap: "18.7B", volume: "1.2B", description: "QuantumCoin utilizes quantum-resistant algorithms..." },
     { name: "NeuralToken", symbol: "NRL", price: 187.65, change: -2.31, icon: "fa-brain", color: "#f72585", marketCap: "4.2B", volume: "320M", description: "NeuralToken powers decentralized AI networks..." },
@@ -871,29 +892,44 @@ function renderCryptos() {
     setupModal();
 }
 
-// Modal logic
-let currentCrypto = null;
+// Modal
 function setupModal() {
     const modal = document.getElementById('stockModal');
     const closeBtn = document.getElementById('modalClose');
-    closeBtn.addEventListener('click', () => modal.classList.remove('active'));
-    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
+    const buyBtn = document.querySelector('.modal-btn-buy');
+    const sellBtn = document.querySelector('.modal-btn-sell');
+
+    closeBtn.onclick = () => modal.classList.remove('active');
+    modal.onclick = e => { if (e.target === modal) modal.classList.remove('active'); };
+
+    buyBtn.onclick = () => handleTrade('Buy');
+    sellBtn.onclick = () => handleTrade('Sell');
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.id = 'tradeAmount';
+    input.min = '0.01';
+    input.placeholder = 'Amount';
+    input.style.marginTop = '10px';
+    input.style.padding = '0.6rem';
+    input.style.borderRadius = '8px';
+    input.style.border = '1px solid #ccc';
+    input.style.width = '100%';
+    input.style.gridColumn = '1 / -1';
+    modal.querySelector('.modal-body').appendChild(input);
 
     document.querySelectorAll('.card').forEach((card, i) => {
-        card.addEventListener('click', () => openModal(enhancedCryptos[i]));
+        card.onclick = () => openModal(enhancedCryptos[i]);
     });
 }
 
 function openModal(crypto) {
     currentCrypto = crypto;
     const modal = document.getElementById('stockModal');
-    const changeClass = crypto.change >= 0 ? 'positive' : 'negative';
-    const changeIcon = crypto.change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
-
     document.getElementById('modalStockName').textContent = crypto.name;
     document.getElementById('modalStockSymbol').textContent = crypto.symbol;
-    document.getElementById('modalStockPrice').textContent = `$${crypto.price.toLocaleString()}`;
-    document.getElementById('modalStockChange').innerHTML = `<span class="${changeClass}"><i class="fas ${changeIcon}"></i> ${Math.abs(crypto.change)}%</span>`;
+    document.getElementById('modalStockPrice').textContent = `$${crypto.price}`;
+    document.getElementById('modalStockChange').innerHTML = `<span class="${crypto.change >= 0 ? 'positive' : 'negative'}"><i class="fas ${crypto.change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'}"></i> ${Math.abs(crypto.change)}%</span>`;
     document.getElementById('modalStockMarketCap').textContent = `$${crypto.marketCap}`;
     document.getElementById('modalStockVolume').textContent = `$${crypto.volume}`;
     document.getElementById('modalStockDescription').textContent = crypto.description;
@@ -908,104 +944,98 @@ function openModal(crypto) {
             <path d="${chartPath}" fill="none" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
     `;
+
     modal.classList.add('active');
+    document.getElementById('tradeAmount').value = '';
 }
 
-// Handle Buy button
-document.querySelector('.modal-btn-buy').addEventListener('click', async () => {
-    if (!currentCrypto) return;
+// Handle buy/sell
+async function handleTrade(type) {
+    if (!currentCrypto || !currentUser) return;
+    const btn = document.querySelector(`.modal-btn-${type.toLowerCase()}`);
+    const amount = parseFloat(document.getElementById('tradeAmount').value);
+    if (isNaN(amount) || amount <= 0) return showToast("Enter valid amount", "var(--negative)");
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return showToast("You must be logged in to buy!", "var(--negative)");
+    btn.textContent = `${type}ing...`;
+    btn.disabled = true;
 
-    const { data: { user } } = await supabase.auth.getUser();
-    const amount = parseFloat((Math.random() * 5 + 1).toFixed(2));
-    const value = parseFloat((currentCrypto.price * amount).toFixed(2));
+    const value = +(currentCrypto.price * amount).toFixed(2);
+    const { data: userData } = await supabase.from('users').select('*').eq('id', currentUser.id).single();
+    let balance = userData?.balance ?? 0;
 
-    const { error } = await supabase.from('transactions').insert({
-        user_id: user.id,
-        username: user.user_metadata.full_name,
-        avatar_url: user.user_metadata.avatar_url,
-        type: 'Buy',
-        coin_symbol: currentCrypto.symbol,
-        amount,
-        value
-    });
+    if (type === 'Buy' && balance < value) {
+        showToast("Insufficient balance", "var(--negative)");
+    } else {
+        if (type === 'Buy') balance -= value;
+        if (type === 'Sell') balance += value;
 
-    if (error) {
-        console.error(error);
-        return showToast("Failed to record transaction", "var(--negative)");
+        await supabase.from('users').update({ balance }).eq('id', currentUser.id);
+        await supabase.from('transactions').insert({
+            user_id: currentUser.id,
+            username: currentUser.user_metadata.full_name,
+            avatar_url: currentUser.user_metadata.avatar_url,
+            type,
+            coin_symbol: currentCrypto.symbol,
+            amount,
+            value
+        });
+
+        showToast(`${type}ed ${amount} ${currentCrypto.symbol}`, "var(--positive)");
+        fetchAndRenderTransactions();
+        updateBalanceDisplay();
     }
 
-    showToast(`You bought ${amount} ${currentCrypto.symbol}`, "var(--positive)");
-    document.getElementById('transactionList').innerHTML = '';
-    fetchAndRenderTransactions();
-});
+    btn.textContent = type;
+    btn.disabled = false;
+}
 
-// Fetch transactions from Supabase
+// Render transactions
 async function fetchAndRenderTransactions() {
-    const { data, error } = await supabase
+    const { data } = await supabase
         .from('transactions')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(10);
 
-    if (error) {
-        console.error(error);
-        return;
-    }
-
-    const transactionList = document.getElementById('transactionList');
-    transactionList.innerHTML = '';
+    const list = document.getElementById('transactionList');
+    list.innerHTML = '';
     data.forEach(tx => {
         const crypto = enhancedCryptos.find(c => c.symbol === tx.coin_symbol);
-        const li = document.createElement('li');
-        li.className = 'transaction-item';
-        li.innerHTML = `
+        const item = document.createElement('li');
+        item.className = 'transaction-item';
+        item.innerHTML = `
             <div class="transaction-details">
-                <div class="transaction-icon" style="color: ${crypto?.color || '#aaa'}; background-color: ${crypto?.color || '#aaa'}20">
-                    <img src="${tx.avatar_url}" style="width: 24px; height: 24px; border-radius: 50%;">
+                <div class="transaction-icon" style="background-color:${crypto?.color ?? '#888'}20;">
+                    <img src="${tx.avatar_url}" style="width:24px;height:24px;border-radius:50%">
                 </div>
                 <div>
                     <div><strong>${tx.username}</strong> ${tx.type} ${tx.amount} ${tx.coin_symbol}</div>
                     <div class="transaction-time">${new Date(tx.created_at).toLocaleString()}</div>
                 </div>
             </div>
-            <div class="transaction-amount" style="color: ${tx.type === 'Buy' ? 'var(--positive)' : 'var(--negative)'}">
+            <div class="transaction-amount" style="color:${tx.type === 'Buy' ? 'var(--positive)' : 'var(--negative)'}">
                 $${tx.value}
             </div>
         `;
-        transactionList.appendChild(li);
+        list.appendChild(item);
     });
 }
 
-// Update stats every 10s
+// Live stat animation
 setInterval(() => {
-    const marketCap = document.getElementById('marketCap');
-    const volume = document.getElementById('dailyVolume');
-    const dominance = document.getElementById('btcDominance');
-
-    marketCap.classList.add('pulse');
-    volume.classList.add('pulse');
-    dominance.classList.add('pulse');
-
-    setTimeout(() => {
-        marketCap.classList.remove('pulse');
-        volume.classList.remove('pulse');
-        dominance.classList.remove('pulse');
-    }, 2000);
-
-    const currentCap = parseFloat(marketCap.textContent.replace(/[^0-9.]/g, ''));
-    const currentVol = parseFloat(volume.textContent.replace(/[^0-9.]/g, ''));
-    const currentDom = parseFloat(dominance.textContent.replace(/[^0-9.]/g, ''));
-
-    marketCap.textContent = `$${((currentCap * (1 + (Math.random() * 0.02 - 0.01))).toFixed(2))}B`;
-    volume.textContent = `$${((currentVol * (1 + (Math.random() * 0.05 - 0.025))).toFixed(2))}B`;
-    dominance.textContent = `${((currentDom + (Math.random() * 0.5 - 0.25)).toFixed(2))}%`;
+    ['marketCap', 'dailyVolume', 'btcDominance'].forEach(id => {
+        const el = document.getElementById(id);
+        const val = parseFloat(el.textContent.replace(/[^0-9.]/g, ''));
+        let newVal = val;
+        if (id === 'btcDominance') newVal += Math.random() * 0.5 - 0.25;
+        else newVal *= 1 + (Math.random() * 0.02 - 0.01);
+        el.textContent = id === 'btcDominance' ? `${newVal.toFixed(2)}%` : `$${newVal.toFixed(2)}B`;
+    });
 }, 10000);
 
 // Init
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadUserHeader();
     renderCryptos();
     fetchAndRenderTransactions();
 });
