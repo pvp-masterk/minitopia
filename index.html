@@ -782,14 +782,15 @@ async function loadUserHeader() {
     const avatar = user.user_metadata.avatar_url;
 
     // Upsert user with default balance of 50 if not present
-    await supabase.from('users').upsert({
-        id: user_id,
-        username,
-        avatar_url: avatar,
-        balance: 50
-    }, {
-        onConflict: 'id'
-    });
+    // Check if user exists
+const { data: existingUser } = await supabase.from('users').select('balance').eq('id', user_id).single();
+
+await supabase.from('users').upsert({
+    id: user_id,
+    username,
+    avatar_url: avatar,
+    balance: existingUser?.balance ?? 50
+});
 
     const userBox = document.createElement('div');
     userBox.style.display = 'flex';
@@ -876,7 +877,8 @@ function renderCryptos() {
         const changeClass = crypto.change >= 0 ? 'positive' : 'negative';
         const changeIcon = crypto.change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
         const chartData = generateDetailedChartData(crypto.change).slice(80);
-        const chartPath = generateChartPath(chartData);
+        const detailedData = generateDetailedChartData(crypto.change).slice(80);
+        const chartPath = generateChartPath(detailedData);
 
         card.innerHTML = `
             <div class="card-header">
