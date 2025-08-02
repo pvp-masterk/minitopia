@@ -352,6 +352,35 @@
                 font-size: 2rem;
             }
         }
+        .toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: #222;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  z-index: 9999;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+  opacity: 0;
+  transform: translateY(20px);
+  animation: toast-in 0.4s forwards, toast-out 0.4s 3s forwards;
+}
+
+@keyframes toast-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -703,6 +732,17 @@
     document.getElementById('loginBtn').onclick = loginWithGoogle;
   }
 
+function showToast(msg, color = '#222') {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  toast.style.background = color;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+}
+
+    
+
   async function loadProfile(googleId) {
     const { data: profile, error } = await supabase
       .from('users')
@@ -768,7 +808,7 @@ async function claimDailyReward(googleId) {
   // If already claimed today
   if (lastClaim && (now - lastClaim < msInDay)) {
     const hoursLeft = ((msInDay - (now - lastClaim)) / (1000 * 60 * 60)).toFixed(1);
-    alert(`You've already claimed your reward. Come back in ${hoursLeft} hours!`);
+    showToast(`You've already claimed your reward. Come back in ${hoursLeft} hours!`);
     return;
   }
 
@@ -791,11 +831,11 @@ async function claimDailyReward(googleId) {
     .eq('google_id', googleId);
 
   if (updateError) {
-    alert('Failed to update reward info.');
+    showToast('Failed to update reward info.');
     return;
   }
 
-  alert(`🎉 You claimed ${reward} tokens! Streak: ${newStreak} days`);
+  showToast(`🎉 You claimed ${reward} tokens! Streak: ${newStreak} days`);
   location.reload(); // optional, refresh to reflect changes
 }
 
