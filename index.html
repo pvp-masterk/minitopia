@@ -787,16 +787,28 @@ async function loadUserHeader() {
   if (!session?.user) return;
 
   currentUser = session.user;
+
   const user_id = currentUser.id;
   const username = currentUser.user_metadata.full_name;
   const avatar = currentUser.user_metadata.avatar_url;
 
-  const { data: userRow } = await supabase.from('users').select('balance').eq('id', user_id).single();
+  // Fetch user or create them if they don't exist
+  const { data: existingUser, error } = await supabase
+    .from('users')
+    .select('id')
+    .eq('id', user_id)
+    .maybeSingle(); // <--- IMPORTANT FIX
 
-  if (!userRow) {
-    await supabase.from('users').insert({ id: user_id, username, avatar_url: avatar, balance: 50 });
+  if (!existingUser) {
+    await supabase.from('users').insert({
+      id: user_id,
+      username,
+      avatar_url: avatar,
+      balance: 50
+    });
   }
 
+  // Create user UI
   const userBox = document.createElement('div');
   userBox.style.display = 'flex';
   userBox.style.alignItems = 'center';
