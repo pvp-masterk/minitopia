@@ -6,32 +6,34 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --bg-color: #121212;
-      --card-bg: #1e1e1e;
-      --text-color: #f5f5f5;
-      --accent-color: #646cff;
-      --border-color: #333;
+      --bg-color: #0a192f;
+      --card-bg: #112240;
+      --text-color: #e6f1ff;
+      --accent-color: #64ffda;
+      --border-color: #1f2d4a;
       --shadow-color: rgba(0, 0, 0, 0.3);
-      --toast-bg: #222;
-      --link-color: #646cff;
+      --toast-bg: #112240;
+      --link-color: #64ffda;
+      --secondary-accent: #1e90ff;
     }
 
     [data-theme="light"] {
-      --bg-color: #f5f5f5;
+      --bg-color: #f0f7ff;
       --card-bg: #ffffff;
-      --text-color: #333;
-      --accent-color: #535bf2;
-      --border-color: #ddd;
+      --text-color: #0a192f;
+      --accent-color: #1e90ff;
+      --border-color: #d1e0ff;
       --shadow-color: rgba(0, 0, 0, 0.1);
-      --toast-bg: #f5f5f5;
-      --link-color: #535bf2;
+      --toast-bg: #ffffff;
+      --link-color: #1e90ff;
+      --secondary-accent: #64ffda;
     }
 
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      transition: background-color 0.3s ease, color 0.3s ease;
+      transition: background-color 0.4s ease, color 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     body {
@@ -41,19 +43,52 @@
       min-height: 100vh;
       padding: 0;
       margin: 0;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Background particles */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      background-color: rgba(100, 255, 218, 0.2);
+      border-radius: 50%;
+      animation: float 15s infinite linear;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-1000px) rotate(720deg);
+        opacity: 0;
+      }
     }
 
     .header {
       background-color: var(--card-bg);
       padding: 1rem 2rem;
-      box-shadow: 0 2px 10px var(--shadow-color);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
       display: flex;
       justify-content: space-between;
       align-items: center;
       position: sticky;
       top: 0;
       z-index: 100;
-      animation: fadeInDown 0.5s ease-out;
+      animation: fadeInDown 0.6s ease-out;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
     }
 
     .nav-links {
@@ -67,6 +102,7 @@
       font-weight: 500;
       position: relative;
       padding: 0.5rem 0;
+      transition: all 0.3s ease;
     }
 
     .nav-links a::after {
@@ -77,11 +113,16 @@
       width: 0;
       height: 2px;
       background-color: var(--accent-color);
-      transition: width 0.3s ease;
+      transition: width 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
     }
 
     .nav-links a:hover::after {
       width: 100%;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent-color);
+      transform: translateY(-2px);
     }
 
     .theme-toggle {
@@ -92,12 +133,14 @@
       font-size: 1.2rem;
       padding: 0.5rem;
       border-radius: 50%;
-      transition: transform 0.3s ease, background-color 0.3s ease;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      background-color: rgba(100, 255, 218, 0.1);
     }
 
     .theme-toggle:hover {
-      transform: rotate(30deg);
-      background-color: rgba(100, 108, 255, 0.1);
+      transform: rotate(30deg) scale(1.1);
+      background-color: rgba(100, 255, 218, 0.2);
+      box-shadow: 0 0 15px rgba(100, 255, 218, 0.3);
     }
 
     .container {
@@ -110,7 +153,7 @@
     .profile-card {
       background-color: var(--card-bg);
       border-radius: 16px;
-      box-shadow: 0 10px 30px var(--shadow-color);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
       padding: 2.5rem;
       max-width: 600px;
       margin: 0 auto;
@@ -118,6 +161,37 @@
       transform: translateY(20px);
       opacity: 0;
       animation: slideUp 0.6s 0.2s ease-out forwards;
+      backdrop-filter: blur(5px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .profile-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to bottom right,
+        transparent 0%,
+        transparent 50%,
+        rgba(100, 255, 218, 0.05) 50%,
+        rgba(100, 255, 218, 0.1) 100%
+      );
+      transform: rotate(30deg);
+      animation: shine 8s infinite linear;
+      z-index: -1;
+    }
+
+    @keyframes shine {
+      0% {
+        transform: rotate(30deg) translate(-10%, -10%);
+      }
+      100% {
+        transform: rotate(30deg) translate(10%, 10%);
+      }
     }
 
     .profile-header {
@@ -133,19 +207,35 @@
       border-radius: 50%;
       object-fit: cover;
       border: 3px solid var(--accent-color);
-      box-shadow: 0 5px 15px var(--shadow-color);
-      transition: transform 0.3s ease;
+      box-shadow: 0 5px 20px rgba(100, 255, 218, 0.3);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
     }
 
     .avatar:hover {
-      transform: scale(1.05);
+      transform: scale(1.1);
+      box-shadow: 0 8px 25px rgba(100, 255, 218, 0.4);
+    }
+
+    .username-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
     }
 
     .username {
       font-size: 1.8rem;
       font-weight: 700;
-      margin-bottom: 0.5rem;
       color: var(--accent-color);
+      position: relative;
+    }
+
+    .verified-badge {
+      color: var(--secondary-accent);
+      font-size: 1.2rem;
+      animation: pulse 2s infinite, float 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 5px rgba(30, 144, 255, 0.5));
     }
 
     .profile-details {
@@ -156,22 +246,26 @@
     }
 
     .detail-item {
-      background-color: rgba(100, 108, 255, 0.1);
+      background-color: rgba(100, 255, 218, 0.05);
       padding: 1rem;
       border-radius: 8px;
       border-left: 4px solid var(--accent-color);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      backdrop-filter: blur(5px);
+      border: 1px solid var(--border-color);
     }
 
     .detail-item:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 5px 15px var(--shadow-color);
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      background-color: rgba(100, 255, 218, 0.1);
     }
 
     .detail-label {
       font-size: 0.9rem;
       opacity: 0.8;
       margin-bottom: 0.3rem;
+      color: var(--accent-color);
     }
 
     .detail-value {
@@ -187,14 +281,23 @@
     }
 
     .badge {
-      background-color: var(--accent-color);
-      color: white;
-      padding: 0.3rem 0.6rem;
+      background: linear-gradient(135deg, var(--accent-color), var(--secondary-accent));
+      color: #0a192f;
+      padding: 0.3rem 0.8rem;
       border-radius: 20px;
       font-size: 0.8rem;
+      font-weight: 600;
       animation: pulse 2s infinite;
+      box-shadow: 0 4px 10px rgba(100, 255, 218, 0.3);
+      transition: all 0.3s ease;
     }
 
+    .badge:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 15px rgba(100, 255, 218, 0.4);
+    }
+
+    /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
@@ -203,7 +306,7 @@
     @keyframes fadeInDown {
       from {
         opacity: 0;
-        transform: translateY(-20px);
+        transform: translateY(-30px);
       }
       to {
         opacity: 1;
@@ -214,7 +317,7 @@
     @keyframes slideUp {
       from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(30px);
       }
       to {
         opacity: 1;
@@ -239,11 +342,13 @@
       border-radius: 8px;
       font-size: 0.95rem;
       z-index: 9999;
-      box-shadow: 0 0 10px var(--shadow-color);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
       opacity: 0;
       transform: translateY(20px);
       animation: toast-in 0.4s forwards, toast-out 0.4s 3s forwards;
       border-left: 4px solid var(--accent-color);
+      backdrop-filter: blur(5px);
+      border: 1px solid var(--border-color);
     }
 
     @keyframes toast-in {
@@ -258,16 +363,31 @@
       display: inline-block;
       width: 50px;
       height: 50px;
-      border: 5px solid rgba(100, 108, 255, 0.3);
+      border: 5px solid rgba(100, 255, 218, 0.2);
       border-radius: 50%;
       border-top-color: var(--accent-color);
       animation: spin 1s ease-in-out infinite;
       margin: 2rem auto;
       display: block;
+      box-shadow: 0 0 15px rgba(100, 255, 218, 0.3);
     }
 
     @keyframes spin {
       to { transform: rotate(360deg); }
+    }
+
+    /* Glow effect for important elements */
+    .glow {
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 5px rgba(100, 255, 218, 0.5);
+      }
+      to {
+        text-shadow: 0 0 15px rgba(100, 255, 218, 0.8);
+      }
     }
 
     @media (max-width: 768px) {
@@ -283,10 +403,17 @@
       .nav-links {
         gap: 1rem;
       }
+      
+      .username-container {
+        justify-content: center;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- Background particles -->
+  <div class="particles" id="particles"></div>
+
   <header class="header">
     <h1>User Profile</h1>
     <div class="nav-links">
@@ -309,6 +436,32 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabase = createClient('https://rdomgvvjbjfrvkbhjxds.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54');
+
+    // Create background particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = window.innerWidth < 768 ? 20 : 50;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        // Random size between 2px and 6px
+        const size = Math.random() * 4 + 2;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // Random position
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        
+        // Random animation duration
+        particle.style.animationDuration = `${Math.random() * 10 + 10}s`;
+        particle.style.animationDelay = `${Math.random() * 5}s`;
+        
+        particlesContainer.appendChild(particle);
+      }
+    }
 
     function showToast(msg, color = 'var(--accent-color)') {
       const toast = document.createElement('div');
@@ -350,10 +503,10 @@
     const googleId = urlParams.get('id');
 
     if (!googleId) {
-      showToast("No ID provided", "#e74c3c");
+      showToast("No ID provided", "#ff5555");
       document.getElementById("profileContainer").innerHTML = `
         <div class="profile-card">
-          <h2 style="color: #e74c3c;">Error</h2>
+          <h2 style="color: #ff5555;">Error</h2>
           <p>No ID provided in URL.</p>
         </div>
       `;
@@ -369,10 +522,10 @@
           .single();
 
         if (error || !user) {
-          showToast("Profile not found", "#e74c3c");
+          showToast("Profile not found", "#ff5555");
           document.getElementById("profileContainer").innerHTML = `
             <div class="profile-card">
-              <h2 style="color: #e74c3c;">Profile Not Found</h2>
+              <h2 style="color: #ff5555;">Profile Not Found</h2>
               <p>The requested profile could not be loaded.</p>
             </div>
           `;
@@ -384,14 +537,22 @@
           ? user.badges.map((badge, index) => 
               `<span class="badge" style="animation-delay: ${index * 0.2}s">${badge}</span>`
             ).join('')
-          : '<span>None</span>';
+          : '<span>No badges yet</span>';
+
+        // Create verification badge if user is verified
+        const verificationBadge = user.verified 
+          ? `<i class="fas fa-check-circle verified-badge" title="Verified User"></i>` 
+          : '';
 
         document.getElementById("profileContainer").innerHTML = `
           <div class="profile-card">
             <div class="profile-header">
               <img src="${user.avatar_url}" class="avatar" alt="${user.username}'s avatar">
               <div>
-                <h1 class="username">${user.username}</h1>
+                <div class="username-container">
+                  <h1 class="username">${user.username}</h1>
+                  ${verificationBadge}
+                </div>
                 <p><strong>Bio:</strong> ${user.bio || 'No bio yet'}</p>
               </div>
             </div>
@@ -406,11 +567,11 @@
                 <div class="detail-value">${user.streak || '0'} days</div>
               </div>
               <div class="detail-item" style="animation-delay: 0.3s">
-                <div class="detail-label">Verified</div>
-                <div class="detail-value">${user.verified ? '✅ Yes' : '❌ No'}</div>
+                <div class="detail-label">Member Since</div>
+                <div class="detail-value">${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}</div>
               </div>
               <div class="detail-item" style="animation-delay: 0.4s">
-                <div class="detail-label">Last Claimed</div>
+                <div class="detail-label">Last Active</div>
                 <div class="detail-value">${user.last_claimed ? new Date(user.last_claimed).toLocaleString() : 'Never'}</div>
               </div>
             </div>
@@ -425,16 +586,18 @@
         `;
       } catch (err) {
         console.error("Error loading profile:", err);
-        showToast("Error loading profile", "#e74c3c");
+        showToast("Error loading profile", "#ff5555");
         document.getElementById("profileContainer").innerHTML = `
           <div class="profile-card">
-            <h2 style="color: #e74c3c;">Error</h2>
+            <h2 style="color: #ff5555;">Error</h2>
             <p>There was an error loading the profile.</p>
           </div>
         `;
       }
     }
 
+    // Initialize the page
+    createParticles();
     loadProfile();
   </script>
 </body>
