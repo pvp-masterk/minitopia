@@ -819,8 +819,20 @@ async function loadUserHeader() {
 
 async function updateBalanceDisplay() {
   if (!currentUser || !balanceDisplay) return;
-  const { data } = await supabase.from('users').select('balance').eq('id', currentUser.id).single();
-  balanceDisplay.textContent = `Balance: $${(+data?.balance || 0).toFixed(2)}`;
+
+  const { data, error } = await supabase
+    .from('users')
+    .select('balance')
+    .eq('id', currentUser.id)
+    .single();
+
+  if (error || !data || typeof data.balance !== 'number') {
+    console.warn('Failed to load balance:', error);
+    balanceDisplay.textContent = 'Balance: $0.00';
+    return;
+  }
+
+  balanceDisplay.textContent = `Balance: $${data.balance.toFixed(2)}`;
 }
 
 function generateDetailedChartData(change) {
