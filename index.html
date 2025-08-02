@@ -339,10 +339,66 @@
 </div>
 
 
-    <div class="main-content" id="modules-section" style="display: none;">
-      <h2>Modules</h2>
-      <p>Enable or disable different bot modules.</p>
+   <div class="main-content" id="modules-section" style="display: none;">
+  <h2>Modules</h2>
+  <p>Enable or disable key bot features below:</p>
+
+  <div class="command-item">
+    <div>
+      <strong>Anti-Raid</strong><br>
+      Automatically bans bots invited by non-trusted users.
     </div>
+    <label class="toggle-switch">
+      <input type="checkbox" id="toggle-antiraid">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="command-item">
+    <div>
+      <strong>Verification System</strong><br>
+      Verifies users via button in the verify-here channel.
+    </div>
+    <label class="toggle-switch">
+      <input type="checkbox" id="toggle-verification" checked disabled>
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="command-item">
+    <div>
+      <strong>Giveaways</strong><br>
+      Enables giveaway creation, entry tracking, and winner selection.
+    </div>
+    <label class="toggle-switch">
+      <input type="checkbox" id="toggle-giveaways" checked disabled>
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="command-item">
+    <div>
+      <strong>Economy System</strong><br>
+      Tracks user balances, daily rewards, and coin transfers.
+    </div>
+    <label class="toggle-switch">
+      <input type="checkbox" id="toggle-economy" checked disabled>
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="command-item">
+    <div>
+      <strong>Invite Tracker</strong><br>
+      Tracks who invited whom using server invites.
+    </div>
+    <label class="toggle-switch">
+      <input type="checkbox" id="toggle-invites" checked disabled>
+      <span class="slider"></span>
+    </label>
+  </div>
+</div>
+
 
     <div class="main-content" id="logs-section" style="display: none;">
       <h2>Logs</h2>
