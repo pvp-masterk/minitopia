@@ -654,14 +654,13 @@
   const username = authUser.user_metadata.full_name;
   const avatar = authUser.user_metadata.avatar_url;
 
-  const { data: existingUser, error, status } = await supabase
+  const { data: existingUser, error } = await supabase
     .from('users')
     .select('*')
     .eq('google_id', googleId)
-    .single();
+    .maybeSingle(); // ✅ no error even if user doesn't exist
 
-  // If user doesn't exist (status 406), insert them
-  if (status === 406) {
+  if (!existingUser) {
     const { error: insertErr } = await supabase.from('users').insert([{
       google_id: googleId,
       supabase_user_id: authUser.id,
@@ -680,9 +679,6 @@
       alert('Insert error: ' + insertErr.message);
       return;
     }
-  } else if (error) {
-    console.error('User fetch error:', error.message);
-    return;
   }
 
   document.getElementById('auth-block')?.remove();
