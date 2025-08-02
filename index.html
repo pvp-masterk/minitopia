@@ -422,426 +422,124 @@
             </ul>
         </div>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Theme toggle functionality
-            const themeToggle = document.getElementById('themeToggle');
-            const body = document.body;
-            
-            themeToggle.addEventListener('click', () => {
-                const currentTheme = body.getAttribute('data-theme');
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                body.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                
-                // Add animation class
-                themeToggle.classList.add('animate-theme-change');
-                setTimeout(() => {
-                    themeToggle.classList.remove('animate-theme-change');
-                }, 500);
-            });
-            
-            // Check for saved theme preference
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            body.setAttribute('data-theme', savedTheme);
+   <script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-            // Enhanced crypto data
-            const enhancedCryptos = [
-                {
-                    name: "QuantumCoin",
-                    symbol: "QTC",
-                    price: 2453.78,
-                    change: 5.42,
-                    icon: "fa-atom",
-                    color: "#6e44ff",
-                    chartData: generateChartData(5.42)
-                },
-                {
-                    name: "NeuralToken",
-                    symbol: "NRL",
-                    price: 187.65,
-                    change: -2.31,
-                    icon: "fa-brain",
-                    color: "#ff6b6b",
-                    chartData: generateChartData(-2.31)
-                },
-                {
-                    name: "EtherX",
-                    symbol: "ETX",
-                    price: 3421.90,
-                    change: 8.75,
-                    icon: "fa-ethereum",
-                    color: "#4cc9f0",
-                    chartData: generateChartData(8.75)
-                },
-                {
-                    name: "BitVault",
-                    symbol: "BTV",
-                    price: 68924.50,
-                    change: -1.15,
-                    icon: "fa-bitcoin-sign",
-                    color: "#f8961e",
-                    chartData: generateChartData(-1.15)
-                },
-                {
-                    name: "AICoin",
-                    symbol: "AIC",
-                    price: 132.45,
-                    change: 12.63,
-                    icon: "fa-robot",
-                    color: "#43aa8b",
-                    chartData: generateChartData(12.63)
-                },
-                {
-                    name: "SolarToken",
-                    symbol: "SLR",
-                    price: 56.78,
-                    change: 3.21,
-                    icon: "fa-solar-panel",
-                    color: "#f9c74f",
-                    chartData: generateChartData(3.21)
-                }
-            ];
-
-            // Generate random chart data based on price change direction
-            function generateChartData(change) {
-                const data = [];
-                const base = Math.random() * 50 + 50;
-                const direction = change >= 0 ? 1 : -1;
-                
-                for (let i = 0; i < 20; i++) {
-                    const value = base + direction * (Math.random() * 15 + i * 2);
-                    data.push(value);
-                }
-                
-                return data;
-            }
-
-            // Render crypto cards
-            const dashboard = document.querySelector('.dashboard');
-            
-            enhancedCryptos.forEach((crypto, index) => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.style.animationDelay = `${index * 0.1}s`;
-                
-                const changeClass = crypto.change >= 0 ? 'positive' : 'negative';
-                const changeIcon = crypto.change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
-                
-                card.innerHTML = `
-                    <div class="card-header">
-                        <div class="coin-icon" style="background-color: ${crypto.color}20; color: ${crypto.color}">
-                            <i class="fas ${crypto.icon}"></i>
-                        </div>
-                        <div>
-                            <div class="coin-name">${crypto.name}</div>
-                            <div class="coin-symbol">${crypto.symbol}</div>
-                        </div>
-                    </div>
-                    <div class="coin-price">$${crypto.price.toLocaleString()}</div>
-                    <div class="price-change ${changeClass}">
-                        <i class="fas ${changeIcon}"></i> ${Math.abs(crypto.change)}%
-                    </div>
-                    <div class="chart-container">
-                        <div class="chart">
-                            <svg viewBox="0 0 100 50" class="chart-line" style="stroke: ${crypto.color}">
-                                ${generateChartPath(crypto.chartData)}
-                            </svg>
-                        </div>
-                    </div>
-                `;
-                
-                dashboard.appendChild(card);
-            });
-
-            // Generate SVG path for chart
-            function generateChartPath(data) {
-                const normalizedData = normalizeData(data);
-                let path = `M 0 ${50 - normalizedData[0]}`;
-                
-                for (let i = 1; i < normalizedData.length; i++) {
-                    path += ` L ${i * (100 / (normalizedData.length - 1))} ${50 - normalizedData[i]}`;
-                }
-                
-                return `<path d="${path}" fill="none" stroke-linecap="round" stroke-linejoin="round" />`;
-            }
-
-            // Normalize data to fit in 0-50 range
-            function normalizeData(data) {
-                const min = Math.min(...data);
-                const max = Math.max(...data);
-                const range = max - min;
-                
-                return data.map(value => {
-                    return range !== 0 ? ((value - min) / range) * 45 + 2.5 : 25;
-                });
-            }
-
-            // Generate random transactions
-            const transactionList = document.getElementById('transactionList');
-            const transactionTypes = ['buy', 'sell', 'transfer', 'swap'];
-            const transactionIcons = {
-                'buy': 'fa-arrow-down',
-                'sell': 'fa-arrow-up',
-                'transfer': 'fa-exchange-alt',
-                'swap': 'fa-random'
-            };
-            const transactionColors = {
-                'buy': '#4caf50',
-                'sell': '#f44336',
-                'transfer': '#2196f3',
-                'swap': '#9c27b0'
-            };
-            
-            for (let i = 0; i < 5; i++) {
-                const type = transactionTypes[Math.floor(Math.random() * transactionTypes.length)];
-                const crypto = enhancedCryptos[Math.floor(Math.random() * enhancedCryptos.length)];
-                const amount = (Math.random() * 5 + 0.1).toFixed(2);
-                const value = (amount * crypto.price).toFixed(2);
-                const time = `${Math.floor(Math.random() * 12) + 1}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')} ${Math.random() > 0.5 ? 'AM' : 'PM'}`;
-                
-                const transaction = document.createElement('li');
-                transaction.className = 'transaction-item';
-                transaction.style.animationDelay = `${i * 0.1}s`;
-                
-                transaction.innerHTML = `
-                    <div class="transaction-details">
-                        <div class="transaction-icon" style="background-color: ${transactionColors[type]}20; color: ${transactionColors[type]}">
-                            <i class="fas ${transactionIcons[type]}"></i>
-                        </div>
-                        <div>
-                            <div class="transaction-type">${type.charAt(0).toUpperCase() + type.slice(1)} ${crypto.symbol}</div>
-                            <div class="transaction-time">${time}</div>
-                        </div>
-                    </div>
-                    <div class="transaction-amount" style="color: ${type === 'buy' ? 'var(--positive)' : type === 'sell' ? 'var(--negative)' : 'var(--accent-color)'}">
-                        ${type === 'buy' ? '+' : type === 'sell' ? '-' : ''}${amount} ${crypto.symbol} ($${value})
-                    </div>
-                `;
-                
-                transactionList.appendChild(transaction);
-            }
-
-            // Animate market stats
-            function animateMarketStats() {
-                const marketCap = document.getElementById('marketCap');
-                const dailyVolume = document.getElementById('dailyVolume');
-                const btcDominance = document.getElementById('btcDominance');
-                
-                // Random fluctuations
-                const marketCapValue = 1.72 + (Math.random() * 0.1 - 0.05);
-                const volumeValue = 68.42 + (Math.random() * 5 - 2.5);
-                const dominanceValue = 42.8 + (Math.random() * 1 - 0.5);
-                
-                marketCap.textContent = `$${marketCapValue.toFixed(2)}T`;
-                dailyVolume.textContent = `$${volumeValue.toFixed(2)}B`;
-                btcDominance.textContent = `${dominanceValue.toFixed(1)}%`;
-                
-                setTimeout(animateMarketStats, 3000);
-            }
-            
-            animateMarketStats();
-
-            // Add hover effects to all cards
-            const cards = document.querySelectorAll('.card');
-            cards.forEach(card => {
-                card.addEventListener('mousemove', (e) => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    
-                    card.style.setProperty('--mouse-x', `${x}px`);
-                    card.style.setProperty('--mouse-y', `${y}px`);
-                });
-            });
-        });
-    </script>
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-  const supabase = createClient('https://rdomgvvjbjfrvkbhjxds.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54');
-
-  async function loginWithGoogle() {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: 'https://minitopia.vercel.app' // your Vercel domain
-      }
-    });
-  }
-
-  async function checkUser() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user) {
-    loginWithGoogle();
-    return;
-  }
-
-  const { data: { user: authUser } } = await supabase.auth.getUser();
-  const googleId = authUser.user_metadata.sub;
-  const username = authUser.user_metadata.full_name;
-  const avatar = authUser.user_metadata.avatar_url;
-
-  const { error: upsertError } = await supabase.from('users').upsert([{
-    google_id: googleId,
-    supabase_user_id: authUser.id,
-    username,
-    avatar_url: avatar,
-    balance: 50,
-    bio: '',
-    streak: 0,
-    badges: [],
-    stocks: [],
-    transactions: [],
-    verified: false
-  }], {
-    onConflict: 'google_id'
-  });
-
-  if (upsertError) {
-    alert('Upsert error: ' + upsertError.message);
-    return;
-  }
-
-  document.getElementById('auth-block')?.remove();
-  loadProfile(googleId);
-}
-  function createAuthBlock() {
-    const block = document.createElement('div');
-    block.id = 'auth-block';
-    block.style.cssText = `
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.85);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      font-size: 1.2rem;
-      text-align: center;
-    `;
-    block.innerHTML = `
-      <p>You must log in with Google to continue.</p>
-      <button id="loginBtn" style="margin-top: 1rem; padding: 0.7rem 1.5rem; background: var(--accent-color); border: none; border-radius: 8px; color: white; cursor: pointer;">
-        Login with Google
-      </button>
-    `;
-    document.body.appendChild(block);
-    document.getElementById('loginBtn').onclick = loginWithGoogle;
-  }
+const supabase = createClient('https://rdomgvvjbjfrvkbhjxds.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54');
 
 function showToast(msg, color = '#222') {
   const toast = document.createElement('div');
   toast.className = 'toast';
   toast.textContent = msg;
   toast.style.background = color;
+  toast.style.position = 'fixed';
+  toast.style.bottom = '30px';
+  toast.style.right = '30px';
+  toast.style.padding = '12px 20px';
+  toast.style.color = 'white';
+  toast.style.borderRadius = '8px';
+  toast.style.fontSize = '0.95rem';
+  toast.style.zIndex = 9999;
+  toast.style.boxShadow = '0 0 10px rgba(0,0,0,0.4)';
+  toast.style.opacity = '0';
+  toast.style.transform = 'translateY(20px)';
+  toast.style.animation = 'toast-in 0.4s forwards, toast-out 0.4s 3s forwards';
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 4000);
 }
 
-    
+async function loadUserHeader() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) return;
 
-  async function loadProfile(googleId) {
-    const { data: profile, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('google_id', googleId)
-      .single();
+  const { data: { user } } = await supabase.auth.getUser();
+  const googleId = user.user_metadata.sub;
+  const username = user.user_metadata.full_name;
+  const avatar = user.user_metadata.avatar_url;
 
-    if (error) {
-      console.error('Profile fetch error:', error.message);
-      return;
-    }
+  const userBox = document.createElement('div');
+  userBox.style.display = 'flex';
+  userBox.style.alignItems = 'center';
+  userBox.style.gap = '10px';
+  userBox.innerHTML = `
+    <img src="${avatar}" alt="avatar" style="width:40px;height:40px;border-radius:50%">
+    <span>${username}</span>
+    <a href="/profile.html?id=${googleId}" style="background:var(--accent-color);color:white;padding:0.4rem 0.8rem;border-radius:6px;text-decoration:none;">View Profile</a>
+  `;
 
-    const container = document.createElement('div');
-    container.style = 'padding: 2rem;';
-    container.innerHTML = `
-      <h2>Your Profile</h2>
-      <img src="${profile.avatar_url}" style="width:80px;height:80px;border-radius:50%;margin-bottom:1rem;" />
-      <p><strong>Username:</strong> ${profile.username}</p>
-      <p><strong>Bio:</strong> <input id="bioInput" value="${profile.bio}" style="width: 300px;"/></p>
-      <p><strong>Balance:</strong> $${profile.balance}</p>
-      <p><strong>Streak:</strong> ${profile.streak} days</p>
-      <p><strong>Badges:</strong> ${profile.badges.join(', ') || 'None'}</p>
-      <p><strong>Verified:</strong> ${profile.verified ? '✅' : '❌'}</p>
-      <p><strong>Last Claimed:</strong> ${profile.last_claimed ? new Date(profile.last_claimed).toLocaleString() : 'Never'}</p>
-<button id="claimRewardBtn" style="margin-top: 1rem; padding: 0.5rem 1rem; background: green; color:white; border:none; border-radius: 6px; cursor:pointer;">
-  🎁 Claim Daily Reward
-</button>
-      <button id="saveProfileBtn" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--accent-color); color:white; border:none; border-radius: 6px; cursor:pointer;">Save Bio</button>
-    `;
-    document.querySelector('.container').appendChild(container);
-document.getElementById('claimRewardBtn').onclick = () => claimDailyReward(googleId);
-    document.getElementById('saveProfileBtn').onclick = async () => {
-      const newBio = document.getElementById('bioInput').value;
-      const { error: updateErr } = await supabase
-        .from('users')
-        .update({ bio: newBio })
-        .eq('google_id', googleId);
-
-      if (updateErr) return alert('Error saving bio: ' + updateErr.message);
-      alert('Bio updated!');
-    };
-  }
-
-  createAuthBlock();
-  checkUser();
-
-async function claimDailyReward(googleId) {
-  const { data: profile, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('google_id', googleId)
-    .single();
-
-  if (error) {
-    alert('Failed to fetch profile');
-    return;
-  }
-
-  const now = new Date();
-  const lastClaim = profile.last_claimed ? new Date(profile.last_claimed) : null;
-  const msInDay = 1000 * 60 * 60 * 24;
-
-  // If already claimed today
-  if (lastClaim && (now - lastClaim < msInDay)) {
-    const hoursLeft = ((msInDay - (now - lastClaim)) / (1000 * 60 * 60)).toFixed(1);
-    showToast(`You've already claimed your reward. Come back in ${hoursLeft} hours!`);
-    return;
-  }
-
-  // Update streak: +1 if yesterday claimed, else reset
-  let newStreak = 1;
-  if (lastClaim && (now - lastClaim < msInDay * 2)) {
-    newStreak = profile.streak + 1;
-  }
-
-  const reward = 50 + (5 * (newStreak - 1)); // base 50 + 5 per streak
-  const newBalance = profile.balance + reward;
-
-  const { error: updateError } = await supabase
-    .from('users')
-    .update({
-      streak: newStreak,
-      balance: newBalance,
-      last_claimed: now.toISOString()
-    })
-    .eq('google_id', googleId);
-
-  if (updateError) {
-    showToast('Failed to update reward info.');
-    return;
-  }
-
-  showToast(`🎉 You claimed ${reward} tokens! Streak: ${newStreak} days`);
-  location.reload(); // optional, refresh to reflect changes
+  document.querySelector('header')?.appendChild(userBox);
 }
 
-    
-</script>
+loadUserHeader();
 
-    
+// existing dashboard and stock rendering logic
+function generateChartData(change) {
+  const data = [];
+  const base = Math.random() * 50 + 50;
+  const direction = change >= 0 ? 1 : -1;
+  for (let i = 0; i < 20; i++) {
+    const value = base + direction * (Math.random() * 15 + i * 2);
+    data.push(value);
+  }
+  return data;
+}
+
+function normalizeData(data) {
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min;
+  return data.map(v => range !== 0 ? ((v - min) / range) * 45 + 2.5 : 25);
+}
+
+function generateChartPath(data) {
+  const norm = normalizeData(data);
+  let path = `M 0 ${50 - norm[0]}`;
+  for (let i = 1; i < norm.length; i++) {
+    path += ` L ${i * (100 / (norm.length - 1))} ${50 - norm[i]}`;
+  }
+  return `<path d="${path}" fill="none" stroke-linecap="round" stroke-linejoin="round" />`;
+}
+
+const enhancedCryptos = [
+  { name: "QuantumCoin", symbol: "QTC", price: 2453.78, change: 5.42, icon: "fa-atom", color: "#6e44ff", chartData: generateChartData(5.42) },
+  { name: "NeuralToken", symbol: "NRL", price: 187.65, change: -2.31, icon: "fa-brain", color: "#ff6b6b", chartData: generateChartData(-2.31) },
+  { name: "EtherX", symbol: "ETX", price: 3421.90, change: 8.75, icon: "fa-ethereum", color: "#4cc9f0", chartData: generateChartData(8.75) },
+  { name: "BitVault", symbol: "BTV", price: 68924.50, change: -1.15, icon: "fa-bitcoin-sign", color: "#f8961e", chartData: generateChartData(-1.15) },
+  { name: "AICoin", symbol: "AIC", price: 132.45, change: 12.63, icon: "fa-robot", color: "#43aa8b", chartData: generateChartData(12.63) },
+  { name: "SolarToken", symbol: "SLR", price: 56.78, change: 3.21, icon: "fa-solar-panel", color: "#f9c74f", chartData: generateChartData(3.21) }
+];
+
+const dashboard = document.querySelector('.dashboard');
+enhancedCryptos.forEach((crypto, index) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.style.animationDelay = `${index * 0.1}s`;
+  const changeClass = crypto.change >= 0 ? 'positive' : 'negative';
+  const changeIcon = crypto.change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+  card.innerHTML = `
+    <div class="card-header">
+      <div class="coin-icon" style="background-color: ${crypto.color}20; color: ${crypto.color}">
+        <i class="fas ${crypto.icon}"></i>
+      </div>
+      <div>
+        <div class="coin-name">${crypto.name}</div>
+        <div class="coin-symbol">${crypto.symbol}</div>
+      </div>
+    </div>
+    <div class="coin-price">$${crypto.price.toLocaleString()}</div>
+    <div class="price-change ${changeClass}">
+      <i class="fas ${changeIcon}"></i> ${Math.abs(crypto.change)}%
+    </div>
+    <div class="chart-container">
+      <div class="chart">
+        <svg viewBox="0 0 100 50" class="chart-line" style="stroke: ${crypto.color}">
+          ${generateChartPath(crypto.chartData)}
+        </svg>
+      </div>
+    </div>
+  `;
+  dashboard.appendChild(card);
+});
+</script>
 </body>
 </html>
