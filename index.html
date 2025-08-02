@@ -764,7 +764,7 @@
         </div>
     </div>
 
-   <script type="module">
+  <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase = createClient('https://rdomgvvjbjfrvkbhjxds.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54');
@@ -793,30 +793,28 @@ async function loadUserHeader() {
   const user_id = currentUser.id;
   const username = currentUser.user_metadata.full_name || "Anonymous";
   const avatar = currentUser.user_metadata.avatar_url || "";
+  const googleId = currentUser.user_metadata.sub || null;
 
-  // Check if user exists
-  let { data: userRow, error: fetchError } = await supabase
+  let { data: userRow } = await supabase
     .from("users")
     .select("id")
     .eq("id", user_id)
-    .maybeSingle(); // <- does NOT throw if 0 rows
+    .maybeSingle();
 
   if (!userRow) {
-    console.log("User not found, inserting...");
-    const { error: insertError } = await supabase.from('users').upsert({
-  supabase_user_id: user_id,
-  username,
-  avatar_url: avatar,
-  balance: 50
-});
-
+    const { error: insertError } = await supabase.from("users").insert({
+      id: user_id,
+      username,
+      avatar_url: avatar,
+      balance: 50,
+      google_id: googleId
+    });
     if (insertError) {
       console.error("User insert failed:", insertError);
       return;
     }
   }
 
-  // UI Elements
   const userBox = document.createElement("div");
   userBox.style.display = "flex";
   userBox.style.alignItems = "center";
@@ -839,12 +837,11 @@ async function loadUserHeader() {
 
 async function updateBalanceDisplay() {
   if (!currentUser || !balanceDisplay) return;
-
   const { data, error } = await supabase
     .from("users")
     .select("balance")
     .eq("id", currentUser.id)
-    .maybeSingle(); // SAFER than .single()
+    .maybeSingle();
 
   if (!data || error) {
     console.warn("Failed to load balance:", error || "no user row");
@@ -884,7 +881,7 @@ const enhancedCryptos = [
 
 const liveChartData = {};
 enhancedCryptos.forEach(coin => {
-  liveChartData[coin.symbol] = generateDetailedChartData(coin.change).slice(80);
+  liveChartData[coin.symbol] = generateDetailedChartData(coin.change).slice(0);
 });
 
 function renderCryptos() {
@@ -987,7 +984,7 @@ async function handleTrade(type) {
   btn.disabled = true;
 
   const value = +(currentCrypto.price * amount).toFixed(2);
-  const { data: userData } = await supabase.from('users').select('*').eq('id', currentUser.id).single();
+  const { data: userData } = await supabase.from('users').select('*').eq('id', currentUser.id).maybeSingle();
   let balance = userData?.balance ?? 0;
 
   if (type === 'Buy' && balance < value) {
@@ -1005,7 +1002,6 @@ async function handleTrade(type) {
       value
     });
 
-    // Update chart
     const chartArr = liveChartData[currentCrypto.symbol];
     const last = chartArr[chartArr.length - 1] || currentCrypto.price;
     const noise = Math.random() * 2;
@@ -1043,6 +1039,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupModal();
 });
 </script>
+
 
 
 </body>
