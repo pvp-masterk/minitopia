@@ -936,6 +936,34 @@ document.getElementById('themeToggle').addEventListener('click', () => {
 });
 document.body.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
 
+function setupModal() {
+  const modal = document.getElementById('stockModal');
+  const closeBtn = document.getElementById('modalClose');
+  const buyBtn = document.querySelector('.modal-btn-buy');
+  const sellBtn = document.querySelector('.modal-btn-sell');
+
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.id = 'tradeAmount';
+  input.min = '0.01';
+  input.placeholder = 'Amount';
+  input.style.marginTop = '10px';
+  input.style.padding = '0.6rem';
+  input.style.borderRadius = '8px';
+  input.style.border = '1px solid #ccc';
+  input.style.width = '100%';
+  input.style.gridColumn = '1 / -1';
+  modal.querySelector('.modal-body')?.appendChild(input);
+
+  closeBtn.onclick = () => modal.classList.remove('active');
+  modal.onclick = e => { if (e.target === modal) modal.classList.remove('active'); };
+
+  buyBtn.onclick = () => handleTrade('Buy');
+  sellBtn.onclick = () => handleTrade('Sell');
+}
+
+       
+
 // Init
 document.addEventListener('DOMContentLoaded', async () => {
   await loadUserHeader();
