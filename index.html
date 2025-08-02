@@ -632,41 +632,37 @@
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
   const supabase = createClient('https://rdomgvvjbjfrvkbhjxds.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54');
-  const VERIFIED_IDS = ['1303491410472865793']; // Replace with actual Discord IDs
 
-  async function loginWithDiscord() {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'discord',
+  async function loginWithGoogle() {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://minitopia.vercel.app' // your Vercel domain
+      }
     });
-    if (error) console.error('Login error:', error.message);
   }
 
   async function checkUser() {
     const { data: { session } } = await supabase.auth.getSession();
     const user = session?.user;
     if (!user) {
-      loginWithDiscord();
+      loginWithGoogle();
       return;
     }
 
-    const discordId = user.user_metadata?.provider_id;
-    const avatar = user.user_metadata?.avatar_url;
-    const username = user.user_metadata?.full_name;
+    const googleId = user.user_metadata.sub;
+    const username = user.user_metadata.full_name;
+    const avatar = user.user_metadata.avatar_url;
 
-    const { data: existingUser, error } = await supabase
+    const { data: existing, error } = await supabase
       .from('users')
       .select('*')
-      .eq('discord_id', discordId)
+      .eq('google_id', googleId)
       .single();
 
-    if (error && error.code !== 'PGRST116') {
-      console.error('User fetch error:', error.message);
-      return;
-    }
-
-    if (!existingUser) {
-      const { error: insertError } = await supabase.from('users').insert([{
-        discord_id: discordId,
+    if (!existing) {
+      const { error: insertErr } = await supabase.from('users').insert([{
+        google_id: googleId,
         username,
         avatar_url: avatar,
         balance: 50,
@@ -675,14 +671,14 @@
         badges: [],
         stocks: [],
         transactions: [],
-        verified: VERIFIED_IDS.includes(discordId),
+        verified: false
       }]);
-      if (insertError) return console.error('Insert error:', insertError.message);
+
+      if (insertErr) return alert('Insert error: ' + insertErr.message);
     }
 
-    // If valid, hide the auth popup
     document.getElementById('auth-block')?.remove();
-    loadProfile(discordId);
+    loadProfile(googleId);
   }
 
   function createAuthBlock() {
@@ -701,20 +697,20 @@
       text-align: center;
     `;
     block.innerHTML = `
-      <p>You must log in with Discord to continue.</p>
+      <p>You must log in with Google to continue.</p>
       <button id="loginBtn" style="margin-top: 1rem; padding: 0.7rem 1.5rem; background: var(--accent-color); border: none; border-radius: 8px; color: white; cursor: pointer;">
-        Login with Discord
+        Login with Google
       </button>
     `;
     document.body.appendChild(block);
-    document.getElementById('loginBtn').onclick = loginWithDiscord;
+    document.getElementById('loginBtn').onclick = loginWithGoogle;
   }
 
-  async function loadProfile(discordId) {
+  async function loadProfile(googleId) {
     const { data: profile, error } = await supabase
       .from('users')
       .select('*')
-      .eq('discord_id', discordId)
+      .eq('google_id', googleId)
       .single();
 
     if (error) {
@@ -725,7 +721,7 @@
     const container = document.createElement('div');
     container.style = 'padding: 2rem;';
     container.innerHTML = `
-      <h2 style="margin-bottom: 1rem;">Your Profile</h2>
+      <h2>Your Profile</h2>
       <img src="${profile.avatar_url}" style="width:80px;height:80px;border-radius:50%;margin-bottom:1rem;" />
       <p><strong>Username:</strong> ${profile.username}</p>
       <p><strong>Bio:</strong> <input id="bioInput" value="${profile.bio}" style="width: 300px;"/></p>
@@ -742,7 +738,7 @@
       const { error: updateErr } = await supabase
         .from('users')
         .update({ bio: newBio })
-        .eq('discord_id', discordId);
+        .eq('google_id', googleId);
 
       if (updateErr) return alert('Error saving bio: ' + updateErr.message);
       alert('Bio updated!');
