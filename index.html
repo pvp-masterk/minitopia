@@ -339,11 +339,11 @@
 </div>
 
 
-   <div class="main-content" id="modules-section" style="display: none;">
+  <div class="main-content" id="modules-section" style="display: none;">
   <h2>Modules</h2>
   <p>Enable or disable key bot features below:</p>
 
-  <div class="command-item">
+  <div class="command-item" style="display: flex; justify-content: space-between; align-items: center;">
     <div>
       <strong>Anti-Raid</strong><br>
       Automatically bans bots invited by non-trusted users.
@@ -354,46 +354,46 @@
     </label>
   </div>
 
-  <div class="command-item">
+  <div class="command-item" style="display: flex; justify-content: space-between; align-items: center;">
     <div>
       <strong>Verification System</strong><br>
       Verifies users via button in the verify-here channel.
     </div>
     <label class="toggle-switch">
-      <input type="checkbox" id="toggle-verification" checked disabled>
+      <input type="checkbox" checked disabled>
       <span class="slider"></span>
     </label>
   </div>
 
-  <div class="command-item">
+  <div class="command-item" style="display: flex; justify-content: space-between; align-items: center;">
     <div>
       <strong>Giveaways</strong><br>
       Enables giveaway creation, entry tracking, and winner selection.
     </div>
     <label class="toggle-switch">
-      <input type="checkbox" id="toggle-giveaways" checked disabled>
+      <input type="checkbox" checked disabled>
       <span class="slider"></span>
     </label>
   </div>
 
-  <div class="command-item">
+  <div class="command-item" style="display: flex; justify-content: space-between; align-items: center;">
     <div>
       <strong>Economy System</strong><br>
       Tracks user balances, daily rewards, and coin transfers.
     </div>
     <label class="toggle-switch">
-      <input type="checkbox" id="toggle-economy" checked disabled>
+      <input type="checkbox" checked disabled>
       <span class="slider"></span>
     </label>
   </div>
 
-  <div class="command-item">
+  <div class="command-item" style="display: flex; justify-content: space-between; align-items: center;">
     <div>
       <strong>Invite Tracker</strong><br>
       Tracks who invited whom using server invites.
     </div>
     <label class="toggle-switch">
-      <input type="checkbox" id="toggle-invites" checked disabled>
+      <input type="checkbox" checked disabled>
       <span class="slider"></span>
     </label>
   </div>
@@ -550,6 +550,24 @@ document.querySelectorAll('.sidebar-item').forEach((item, idx) => {
   });
 });
 
+     document.getElementById("toggle-antiraid")?.addEventListener("change", async (e) => {
+    const enabled = e.target.checked;
+    const token = localStorage.getItem("discord_token");
+    if (!token) return alert("Not logged in.");
+
+    const res = await fetch("/api/antiraid", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ enabled })
+    });
+
+    if (!res.ok) {
+      alert("Failed to update Anti-Raid setting");
+    }
+  });
 
   // Start
   init();
