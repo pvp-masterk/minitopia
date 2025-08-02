@@ -781,11 +781,14 @@ async function loadUserHeader() {
     const username = user.user_metadata.full_name;
     const avatar = user.user_metadata.avatar_url;
 
-    // Upsert user into users table
+    // Upsert user with default balance of 50 if not present
     await supabase.from('users').upsert({
         id: user_id,
         username,
-        avatar_url: avatar
+        avatar_url: avatar,
+        balance: 50
+    }, {
+        onConflict: 'id'
     });
 
     const userBox = document.createElement('div');
@@ -810,8 +813,18 @@ async function loadUserHeader() {
 
 async function updateBalanceDisplay() {
     if (!currentUser || !balanceDisplay) return;
-    const { data } = await supabase.from('users').select('balance').eq('id', currentUser.id).single();
-    balanceDisplay.textContent = `Balance: $${(data?.balance ?? 0).toFixed(2)}`;
+    const { data, error } = await supabase
+        .from('users')
+        .select('balance')
+        .eq('id', currentUser.id)
+        .single();
+
+    if (error || data === null) {
+        balanceDisplay.textContent = `Balance: $0.00`;
+        return;
+    }
+
+    balanceDisplay.textContent = `Balance: $${(+data.balance).toFixed(2)}`;
 }
 
 // Theme toggle
@@ -1006,8 +1019,7 @@ async function fetchAndRenderTransactions() {
         item.innerHTML = `
             <div class="transaction-details">
                 <div class="transaction-icon" style="background-color:${crypto?.color ?? '#888'}20;">
-                    <img src="${tx.avatar_url}" style="width:24px;height:24px;border-radius:50%">
-                </div>
+                    <img src="${tx.avatar_url}" style="width:24px;height:24px;border-radius:50%"></div>
                 <div>
                     <div><strong>${tx.username}</strong> ${tx.type} ${tx.amount} ${tx.coin_symbol}</div>
                     <div class="transaction-time">${new Date(tx.created_at).toLocaleString()}</div>
@@ -1021,7 +1033,7 @@ async function fetchAndRenderTransactions() {
     });
 }
 
-// Live stat animation
+// Live stats
 setInterval(() => {
     ['marketCap', 'dailyVolume', 'btcDominance'].forEach(id => {
         const el = document.getElementById(id);
@@ -1040,5 +1052,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     fetchAndRenderTransactions();
 });
 </script>
+
 </body>
 </html>
