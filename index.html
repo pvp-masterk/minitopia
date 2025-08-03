@@ -803,12 +803,13 @@ async function loadUserHeader() {
 
   if (!userRow) {
     const { error: insertError } = await supabase.from("users").insert({
-      id: user_id,
-      username,
-      avatar_url: avatar,
-      balance: 50,
-      google_id: googleId
-    });
+  id: user_id,
+  username,
+  avatar_url: avatar,
+  balance: 50,
+  google_id: googleId,
+  supabase_user_id: user_id  // ✅ this line fixes your crash
+});
     if (insertError) {
       console.error("User insert failed:", insertError);
       return;
