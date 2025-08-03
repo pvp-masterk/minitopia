@@ -808,8 +808,7 @@ async function loadUserHeader() {
       avatar_url: avatar,
       balance: 50
     };
-
-    if (googleId !== null && googleId !== undefined) {
+    if (googleId) {
       insertPayload.google_id = googleId;
     }
 
