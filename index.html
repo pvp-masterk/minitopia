@@ -811,7 +811,7 @@ async function loadUserHeader() {
   supabase_user_id: user_id  // ✅ this line fixes your crash
 });
     if (insertError) {
-      console.error("User insert failed:", insertError);
+      console.error("User insert failed:", insertError.message, insertError.details, insertError.code);
       return;
     }
   }
