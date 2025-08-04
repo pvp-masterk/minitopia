@@ -3,1051 +3,785 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiniTopia Stocks</title>
+    <title>MiniTopia - 6b6t Clan</title>
     <style>
         :root {
-            --bg-primary: #0a0e17;
-            --bg-secondary: #131a2d;
-            --bg-tertiary: #1e2747;
-            --text-primary: #e0e9ff;
-            --text-secondary: #a4b5d6;
-            --accent-color: #3a86ff;
-            --accent-light: #5d9cff;
-            --accent-dark: #1a6de8;
-            --positive: #4cc9f0;
-            --negative: #f72585;
-            --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            --transition-speed: 0.4s;
-            --glass-effect: rgba(19, 26, 45, 0.7);
+            --primary: #0a192f;
+            --secondary: #172a45;
+            --accent: #64ffda;
+            --text: #ccd6f6;
+            --text-secondary: #8892b0;
         }
-
-        [data-theme="light"] {
-            --bg-primary: #f0f5ff;
-            --bg-secondary: #ffffff;
-            --bg-tertiary: #e6f0ff;
-            --text-primary: #1a2a4a;
-            --text-secondary: #5a6a8a;
-            --accent-color: #3a86ff;
-            --accent-light: #5d9cff;
-            --accent-dark: #1a6de8;
-            --positive: #2e7d32;
-            --negative: #c62828;
-            --card-shadow: 0 8px 32px rgba(58, 134, 255, 0.1);
-            --glass-effect: rgba(255, 255, 255, 0.7);
-        }
-
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            transition: background-color var(--transition-speed) ease, 
-                        color var(--transition-speed) ease, 
-                        transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
-                        box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
+        
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
+            background-color: var(--primary);
+            color: var(--text);
             overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(58, 134, 255, 0.1) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(248, 37, 133, 0.1) 0%, transparent 20%);
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(100, 255, 218, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(100, 255, 218, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(100, 255, 218, 0); }
+        }
+        
+        /* Header */
         header {
+            background-color: var(--secondary);
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            animation: fadeInDown 0.8s ease;
-            position: relative;
-            z-index: 10;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            background: linear-gradient(90deg, var(--accent-color), var(--positive));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            position: relative;
-            display: inline-block;
-        }
-
-        h1::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: fixed;
             width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, var(--accent-color), var(--positive));
-            border-radius: 3px;
-            transform: scaleX(0);
-            transform-origin: left;
-            animation: scaleIn 1s 0.5s forwards cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 100;
+            animation: fadeIn 0.8s ease-out;
         }
-
-        .theme-toggle {
-            position: relative;
-            width: 60px;
-            height: 30px;
-            border-radius: 15px;
-            background-color: var(--bg-tertiary);
-            box-shadow: var(--card-shadow);
-            cursor: pointer;
-            overflow: hidden;
+        
+        .logo {
             display: flex;
             align-items: center;
-            padding: 0 5px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all var(--transition-speed) ease;
+            gap: 1rem;
         }
-
-        .theme-toggle:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .theme-toggle::before {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
+        
+        .logo img {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            background-color: var(--accent-color);
-            left: 5px;
-            transition: transform var(--transition-speed) ease;
-            box-shadow: 0 0 10px var(--accent-color);
+            object-fit: cover;
+            animation: float 4s ease-in-out infinite;
         }
-
-        [data-theme="light"] .theme-toggle::before {
-            transform: translateX(30px);
-            background-color: var(--accent-dark);
-        }
-
-        .theme-icons {
-            display: flex;
-            width: 100%;
-            justify-content: space-between;
-            z-index: 1;
-        }
-
-        .theme-icons i {
-            font-size: 14px;
-            color: var(--text-secondary);
-            transition: color var(--transition-speed) ease;
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-            perspective: 1000px;
-        }
-
-        .card {
-            background-color: var(--bg-secondary);
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: var(--card-shadow);
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            animation: fadeIn 0.6s ease;
-            will-change: transform;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            cursor: pointer;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(58, 134, 255, 0.1) 0%, transparent 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-            z-index: 2;
-        }
-
-        .card:hover::before {
-            opacity: 1;
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-            position: relative;
-            z-index: 2;
-        }
-
-        .coin-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background-color: var(--bg-tertiary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 1rem;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease;
-        }
-
-        .card:hover .coin-icon {
-            transform: rotate(15deg) scale(1.1);
-        }
-
-        .coin-name {
-            font-weight: 700;
-            font-size: 1.1rem;
-            letter-spacing: -0.2px;
-        }
-
-        .coin-symbol {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-top: 2px;
-            font-weight: 500;
-        }
-
-        .coin-price {
+        
+        .logo h1 {
             font-size: 1.8rem;
-            font-weight: 800;
-            margin: 0.5rem 0;
-            position: relative;
-            z-index: 2;
-            letter-spacing: -0.5px;
-        }
-
-        .price-change {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.4rem 0.8rem;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            gap: 0.3rem;
-            transition: all 0.3s ease;
-        }
-
-        .positive {
-            background-color: rgba(76, 201, 240, 0.15);
-            color: var(--positive);
-        }
-
-        .negative {
-            background-color: rgba(247, 37, 133, 0.15);
-            color: var(--negative);
-        }
-
-        .chart-container {
-            height: 100px;
-            margin: 1rem 0;
-            position: relative;
-            overflow: hidden;
-            border-radius: 8px;
-            background-color: var(--bg-tertiary);
-        }
-
-        .chart {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        .chart-line {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            stroke-width: 2;
-            fill: none;
-            filter: drop-shadow(0 0 8px currentColor);
-        }
-
-        .market-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background-color: var(--bg-secondary);
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: var(--card-shadow);
-            animation: fadeIn 0.6s ease;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .stat-title {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(90deg, var(--accent-color), var(--text-primary));
+            background: linear-gradient(90deg, var(--accent), #4b9fe1);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
-
-        .transactions {
-            background-color: var(--bg-secondary);
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: var(--card-shadow);
-            animation: fadeIn 0.6s ease;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .transactions h2 {
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
-            font-weight: 700;
-            position: relative;
-            display: inline-block;
-        }
-
-        .transactions h2::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, var(--accent-color), transparent);
-            border-radius: 3px;
-        }
-
-        .transaction-list {
+        
+        nav ul {
+            display: flex;
+            gap: 2rem;
             list-style: none;
         }
-
-        .transaction-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            animation: fadeIn 0.6s ease;
+        
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
             transition: all 0.3s ease;
-        }
-
-        .transaction-item:hover {
-            background-color: var(--bg-tertiary);
-            transform: translateX(5px);
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 0 -0.5rem;
-        }
-
-        [data-theme="light"] .transaction-item {
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        .transaction-details {
-            display: flex;
-            align-items: center;
-        }
-
-        .transaction-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: var(--bg-tertiary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 1rem;
-            font-size: 1rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .transaction-amount {
-            font-weight: 700;
-        }
-
-        .transaction-time {
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            margin-top: 2px;
-        }
-
-        /* Modal styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background-color: var(--bg-secondary);
-            border-radius: 20px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
-            padding: 2rem;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            transform: translateY(50px) scale(0.9);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 0;
         }
-
-        .modal-overlay.active .modal-content {
-            transform: translateY(0) scale(1);
-            opacity: 1;
+        
+        nav a:hover {
+            color: var(--accent);
         }
-
-        .modal-header {
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--accent);
+            transition: width 0.3s ease;
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        /* Main Content */
+        main {
+            padding-top: 80px;
+            min-height: 100vh;
+        }
+        
+        .section {
+            padding: 4rem 2rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 70%;
+            height: 3px;
+            background-color: var(--accent);
+        }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--accent);
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-title {
-            font-size: 1.8rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--text-secondary);
             cursor: pointer;
-            transition: color 0.3s ease;
-            padding: 0.5rem;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
         }
-
-        .modal-close:hover {
-            color: var(--text-primary);
-            transform: rotate(90deg);
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
         }
-
-        .modal-body {
+        
+        /* Store Section */
+        .store-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 2rem;
+            margin-top: 2rem;
         }
-
-        .modal-chart {
-    height: 250px;
-    background-color: var(--bg-tertiary);
-    border-radius: 12px;
-    padding: 1rem;
-    grid-column: 1 / -1;
-    overflow: hidden;
-    position: relative;
-}
-
-.modal-chart svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-        .modal-stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
+        
+        .item-card {
+            background-color: var(--secondary);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
-
-        .modal-stat {
-            background-color: var(--bg-tertiary);
-            border-radius: 12px;
-            padding: 1rem;
+        
+        .item-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
-
-        .modal-stat-title {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
+        
+        .item-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .item-info {
+            padding: 1.5rem;
+        }
+        
+        .item-title {
+            font-size: 1.3rem;
             margin-bottom: 0.5rem;
         }
-
-        .modal-stat-value {
-            font-size: 1.4rem;
-            font-weight: 700;
+        
+        .item-price {
+            color: var(--accent);
+            font-weight: bold;
+            margin-bottom: 1rem;
         }
-
-        .modal-description {
-            grid-column: 1 / -1;
+        
+        .item-desc {
             color: var(--text-secondary);
-            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
         }
-
-        .modal-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-            grid-column: 1 / -1;
+        
+        .item-status {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            text-transform: uppercase;
         }
-
-        .modal-btn {
-            padding: 0.8rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
+        
+        .status-free {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .status-available {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .status-unavailable {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .item-tag {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            background-color: var(--accent);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            transform: rotate(-15deg);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Bases Section */
+        .bases-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .base-card {
+            background-color: var(--secondary);
+            border-radius: 10px;
+            overflow: hidden;
             transition: all 0.3s ease;
-            border: none;
-            flex: 1;
-            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-
-        .modal-btn-buy {
-            background-color: var(--positive);
-            color: var(--bg-primary);
+        
+        .base-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
-
-        .modal-btn-sell {
-            background-color: var(--negative);
-            color: white;
+        
+        .base-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
         }
-
-        .modal-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        
+        .base-info {
+            padding: 1.5rem;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        .base-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
         }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        .base-coords {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
         }
-
-        @keyframes scaleIn {
-            from { transform: scaleX(0); }
-            to { transform: scaleX(1); }
+        
+        .base-desc {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
         }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(58, 134, 255, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(58, 134, 255, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(58, 134, 255, 0); }
+        
+        /* Accomplishments */
+        .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 3rem auto;
         }
-
-        @keyframes glow {
-            from { box-shadow: 0 0 10px -5px var(--accent-color); }
-            to { box-shadow: 0 0 20px 5px var(--accent-color); }
+        
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            background-color: var(--accent);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -3px;
+            border-radius: 10px;
         }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        
+        .accomplishment {
+            padding: 10px 40px;
+            position: relative;
+            background-color: inherit;
+            width: 50%;
+            animation: fadeIn 0.8s ease-out;
         }
-
-        /* Modern scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        
+        .accomplishment::after {
+            content: '';
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            right: -17px;
+            background-color: var(--secondary);
+            border: 4px solid var(--accent);
+            top: 15px;
+            border-radius: 50%;
+            z-index: 1;
         }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-primary);
+        
+        .left {
+            left: 0;
         }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent-color);
-            border-radius: 4px;
+        
+        .right {
+            left: 50%;
         }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent-light);
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            
-            .market-stats {
-                grid-template-columns: 1fr;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-
-            .modal-body {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
+        
+        .left::before {
+            content: " ";
+            height: 0;
+            position: absolute;
+            top: 22px;
+            width: 0;
+            z-index: 1;
             right: 30px;
-            background: var(--bg-tertiary);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            z-index: 9999;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-            opacity: 0;
-            transform: translateY(20px);
-            animation: toast-in 0.4s forwards, toast-out 0.4s 3s forwards;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: medium solid var(--secondary);
+            border-width: 10px 0 10px 10px;
+            border-color: transparent transparent transparent var(--secondary);
         }
-
-        @keyframes toast-in {
-            to {
-                opacity: 1;
-                transform: translateY(0);
+        
+        .right::before {
+            content: " ";
+            height: 0;
+            position: absolute;
+            top: 22px;
+            width: 0;
+            z-index: 1;
+            left: 30px;
+            border: medium solid var(--secondary);
+            border-width: 10px 10px 10px 0;
+            border-color: transparent var(--secondary) transparent transparent;
+        }
+        
+        .right::after {
+            left: -16px;
+        }
+        
+        .accomplishment-content {
+            padding: 20px 30px;
+            background-color: var(--secondary);
+            position: relative;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .accomplishment-date {
+            color: var(--accent);
+            font-weight: bold;
+        }
+        
+        .accomplishment-title {
+            margin: 0.5rem 0;
+            font-size: 1.2rem;
+        }
+        
+        .accomplishment-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--secondary);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-links a {
+            color: var(--text);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+        
+        .copyright {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media screen and (max-width: 768px) {
+            nav ul {
+                gap: 1rem;
+            }
+            
+            .section {
+                padding: 3rem 1rem;
+            }
+            
+            .store-container, .bases-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline::after {
+                left: 31px;
+            }
+            
+            .accomplishment {
+                width: 100%;
+                padding-left: 70px;
+                padding-right: 25px;
+            }
+            
+            .accomplishment::before {
+                left: 60px;
+                border: medium solid var(--secondary);
+                border-width: 10px 10px 10px 0;
+                border-color: transparent var(--secondary) transparent transparent;
+            }
+            
+            .left::after, .right::after {
+                left: 15px;
+            }
+            
+            .right {
+                left: 0%;
             }
         }
-
-        @keyframes toast-out {
-            to {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-        }
-
-        .chart-line path {
-  transition: d 0.4s ease;
-}
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body data-theme="dark">
-    <div class="container">
-        <header>
-            <h1>MiniTopia Stocks</h1>
-            <div class="theme-toggle" id="themeToggle">
-                <div class="theme-icons">
-                    <i class="fas fa-moon"></i>
-                    <i class="fas fa-sun"></i>
-                </div>
-            </div>
-        </header>
-
-        <div class="dashboard">
-            <!-- Enhanced Crypto Cards will be inserted here by JavaScript -->
+<body>
+    <header>
+        <div class="logo">
+            <img src="https://via.placeholder.com/150" alt="MiniTopia Logo">
+            <h1>MiniTopia</h1>
         </div>
-
-        <div class="market-stats">
-            <div class="stat-card pulse">
-                <div class="stat-title">Total Market Cap</div>
-                <div class="stat-value" id="marketCap">$1.72T</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-title">24h Volume</div>
-                <div class="stat-value" id="dailyVolume">$68.42B</div>
-            </div>
-            <div class="stat-card glow">
-                <div class="stat-title">BTC Dominance</div>
-                <div class="stat-value" id="btcDominance">42.8%</div>
-            </div>
-        </div>
-
-        <div class="transactions">
-            <h2>Recent Transactions</h2>
-            <ul class="transaction-list" id="transactionList">
-                <!-- Transactions will be inserted here by JavaScript -->
+        <nav>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#store">Store</a></li>
+                <li><a href="#bases">Bases</a></li>
+                <li><a href="#accomplishments">Accomplishments</a></li>
             </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="section">
+            <h2 class="section-title">Welcome to MiniTopia</h2>
+            <p>Welcome to the official web application of MiniTopia, the upcoming one of the best clans on 6b6t</p>
+        </section>
+
+        <section id="store" class="section">
+            <h2 class="section-title">Clan Store</h2>
+            <div class="store-container" id="store-items">
+                <!-- Items will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <section id="bases" class="section">
+            <h2 class="section-title">Our Bases</h2>
+            <div class="bases-container" id="bases-list">
+                <!-- Bases will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <section id="accomplishments" class="section">
+            <h2 class="section-title">Accomplishments</h2>
+            <div class="timeline" id="timeline">
+                <!-- Accomplishments will be populated by JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a href="#">Discord</a>
+            <a href="#">YouTube</a>
+            <a href="#">Twitter</a>
         </div>
+        <p class="copyright">© 2025 MiniTopia Clan. All rights reserved.</p>
+    </footer>
+
+    <div class="theme-toggle" id="themeToggle">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
     </div>
 
-    <!-- Modal Structure -->
-    <div class="modal-overlay" id="stockModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title" id="modalStockTitle">
-                    <div class="coin-icon" id="modalStockIcon"></div>
-                    <div>
-                        <div id="modalStockName"></div>
-                        <div class="coin-symbol" id="modalStockSymbol"></div>
+    <script>
+        // Data for the webapp
+        const clanData = {
+            storeItems: [
+                {
+                    id: 1,
+                    title: "PvP Kit Standard",
+                    description: "Full set of diamond armor and tools",
+                    price: "64 Diamonds",
+                    image: "https://via.placeholder.com/300x200?text=Diamond+Set",
+                    status: "available",
+                    tag: "Popular"
+                },
+                {
+                    id: 2,
+                    title: "Elytra",
+                    description: "Used for flying with fireworks",
+                    price: "32 Diamonds",
+                    image: "https://via.placeholder.com/300x200?text=Elytra",
+                    status: "available",
+                    tag: "New"
+                },
+                {
+                    id: 3,
+                    title: "Shulker Box",
+                    description: "Portable storage that keeps items when broken",
+                    price: "16 Diamonds",
+                    image: "https://via.placeholder.com/300x200?text=Shulker+Box",
+                    status: "unavailable",
+                    tag: "Out of Stock"
+                },
+                {
+                    id: 4,
+                    title: "Totem of Undying",
+                    description: "Prevents death when held",
+                    price: "48 Diamonds",
+                    image: "https://via.placeholder.com/300x200?text=Totem+of+Undying",
+                    status: "available",
+                    tag: "Limited"
+                },
+                {
+                    id: 5,
+                    title: "Starter Kit",
+                    description: "Basic tools and food for new members",
+                    price: "Free",
+                    image: "https://via.placeholder.com/300x200?text=Starter+Kit",
+                    status: "free",
+                    tag: "Free"
+                },
+                {
+                    id: 6,
+                    title: "Enchanted Golden Apple",
+                    description: "Provides powerful buffs when eaten",
+                    price: "128 Diamonds",
+                    image: "https://via.placeholder.com/300x200?text=Enchanted+Golden+Apple",
+                    status: "available",
+                    tag: "Rare"
+                }
+            ],
+            bases: [
+                {
+                    id: 1,
+                    title: "Sky Haven",
+                    description: "Our floating base in the sky, nearly impossible to find without coords. Features automated farms and beautiful builds.",
+                    image: "https://via.placeholder.com/350x200?text=Sky+Haven",
+                    coords: "X: 12,345 | Y: 120 | Z: -54,321"
+                },
+                {
+                    id: 2,
+                    title: "Nether Fortress",
+                    description: "A fortified base built within a nether fortress. Perfect for quick access to nether resources.",
+                    image: "https://via.placeholder.com/350x200?text=Nether+Fortress",
+                    coords: "X: 1,234 | Y: 64 | Z: 5,678"
+                },
+                {
+                    id: 3,
+                    title: "Ocean Monument",
+                    description: "Underwater base converted from an ocean monument. Features guardian farms and prismarine architecture.",
+                    image: "https://via.placeholder.com/350x200?text=Ocean+Monument",
+                    coords: "X: -9,876 | Y: 45 | Z: 12,345"
+                },
+                {
+                    id: 4,
+                    title: "Mesa Mines",
+                    description: "Hidden within the badlands, this base specializes in mining and resource gathering operations.",
+                    image: "https://via.placeholder.com/350x200?text=Mesa+Mines",
+                    coords: "X: 23,456 | Y: 72 | Z: -34,567"
+                }
+            ],
+            accomplishments: [
+                {
+                    id: 1,
+                    date: "June 2023",
+                    title: "Clan Foundation",
+                    description: "MiniTopia was officially founded with 5 core members."
+                },
+                {
+                    id: 2,
+                    date: "July 2023",
+                    title: "First Mega Base",
+                    description: "Completed construction of Sky Haven, our first major base."
+                },
+                {
+                    id: 3,
+                    date: "August 2023",
+                    title: "50 Members",
+                    description: "Reached 50 active clan members in our Discord server."
+                },
+                {
+                    id: 4,
+                    date: "September 2023",
+                    title: "First Dupe",
+                    description: "Successfully performed our first item duplication on 6b6t."
+                },
+                {
+                    id: 5,
+                    date: "October 2023",
+                    title: "Store Launch",
+                    description: "Officially launched our in-game store system."
+                }
+            ]
+        };
+
+        // DOM Elements
+        const storeContainer = document.getElementById('store-items');
+        const basesContainer = document.getElementById('bases-list');
+        const timelineContainer = document.getElementById('timeline');
+        const themeToggle = document.getElementById('themeToggle');
+
+        // Render Store Items
+        function renderStoreItems() {
+            storeContainer.innerHTML = '';
+            clanData.storeItems.forEach(item => {
+                const statusClass = `status-${item.status}`;
+                const statusText = item.status.charAt(0).toUpperCase() + item.status.slice(1);
+                
+                const itemElement = document.createElement('div');
+                itemElement.className = 'item-card';
+                itemElement.innerHTML = `
+                    <span class="item-tag">${item.tag}</span>
+                    <img src="${item.image}" alt="${item.title}" class="item-image">
+                    <div class="item-info">
+                        <h3 class="item-title">${item.title}</h3>
+                        <p class="item-price">${item.price}</p>
+                        <p class="item-desc">${item.description}</p>
+                        <span class="item-status ${statusClass}">${statusText}</span>
                     </div>
-                </div>
-                <button class="modal-close" id="modalClose">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="modal-chart" id="modalStockChart">
-                    <!-- Detailed chart will be inserted here -->
-                </div>
-                <div class="modal-stats">
-                    <div class="modal-stat">
-                        <div class="modal-stat-title">Current Price</div>
-                        <div class="modal-stat-value" id="modalStockPrice"></div>
+                `;
+                
+                // Add animation delay based on index
+                itemElement.style.animationDelay = `${clanData.storeItems.indexOf(item) * 0.1}s`;
+                storeContainer.appendChild(itemElement);
+            });
+        }
+
+        // Render Bases
+        function renderBases() {
+            basesContainer.innerHTML = '';
+            clanData.bases.forEach(base => {
+                const baseElement = document.createElement('div');
+                baseElement.className = 'base-card';
+                baseElement.innerHTML = `
+                    <img src="${base.image}" alt="${base.title}" class="base-image">
+                    <div class="base-info">
+                        <h3 class="base-title">${base.title}</h3>
+                        <div class="base-coords">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <span>${base.coords}</span>
+                        </div>
+                        <p class="base-desc">${base.description}</p>
                     </div>
-                    <div class="modal-stat">
-                        <div class="modal-stat-title">24h Change</div>
-                        <div class="modal-stat-value" id="modalStockChange"></div>
+                `;
+                
+                // Add animation delay based on index
+                baseElement.style.animationDelay = `${clanData.bases.indexOf(base) * 0.1}s`;
+                basesContainer.appendChild(baseElement);
+            });
+        }
+
+        // Render Accomplishments
+        function renderAccomplishments() {
+            timelineContainer.innerHTML = '';
+            clanData.accomplishments.forEach((accomplishment, index) => {
+                const accomplishmentElement = document.createElement('div');
+                accomplishmentElement.className = `accomplishment ${index % 2 === 0 ? 'left' : 'right'}`;
+                accomplishmentElement.innerHTML = `
+                    <div class="accomplishment-content">
+                        <div class="accomplishment-date">${accomplishment.date}</div>
+                        <h3 class="accomplishment-title">${accomplishment.title}</h3>
+                        <p class="accomplishment-desc">${accomplishment.description}</p>
                     </div>
-                    <div class="modal-stat">
-                        <div class="modal-stat-title">Market Cap</div>
-                        <div class="modal-stat-value" id="modalStockMarketCap"></div>
-                    </div>
-                    <div class="modal-stat">
-                        <div class="modal-stat-title">Volume (24h)</div>
-                        <div class="modal-stat-value" id="modalStockVolume"></div>
-                    </div>
-                </div>
-                <div class="modal-description" id="modalStockDescription">
-                    <!-- Description will be inserted here -->
-                </div>
-                <div class="modal-actions">
-                    <button class="modal-btn modal-btn-buy">Buy</button>
-                    <button class="modal-btn modal-btn-sell">Sell</button>
-                </div>
-            </div>
-        </div>
-    </div>
+                `;
+                
+                // Add animation delay based on index
+                accomplishmentElement.style.animationDelay = `${index * 0.1}s`;
+                timelineContainer.appendChild(accomplishmentElement);
+            });
+        }
 
-  <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        // Theme Toggle
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            
+            if (document.body.classList.contains('light-theme')) {
+                document.documentElement.style.setProperty('--primary', '#f8f9fa');
+                document.documentElement.style.setProperty('--secondary', '#e9ecef');
+                document.documentElement.style.setProperty('--text', '#212529');
+                document.documentElement.style.setProperty('--text-secondary', '#495057');
+            } else {
+                document.documentElement.style.setProperty('--primary', '#0a192f');
+                document.documentElement.style.setProperty('--secondary', '#172a45');
+                document.documentElement.style.setProperty('--text', '#ccd6f6');
+                document.documentElement.style.setProperty('--text-secondary', '#8892b0');
+            }
+        });
 
-const supabase = createClient('https://rdomgvvjbjfrvkbhjxds.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkb21ndnZqYmpmcnZrYmhqeGRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjY5NTEsImV4cCI6MjA2OTIwMjk1MX0.3CMfwZ_HocNzkyvuYjvFL3lypZX2JL2kXvk3kL5AB54');
+        // Smooth scrolling for navigation
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
 
-let currentUser = null;
-let currentCrypto = null;
-let balanceDisplay = null;
+        // Initialize the app
+        function init() {
+            renderStoreItems();
+            renderBases();
+            renderAccomplishments();
+        }
 
-function showToast(msg, color = 'var(--accent-color)') {
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = msg;
-  toast.style.background = color;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3400);
-}
-
-async function loadUserHeader() {
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  if (!session?.user) {
-    console.warn("No active session", sessionError);
-    return;
-  }
-
-  currentUser = session.user;
-  const user_id = currentUser.id;
-  const username = currentUser.user_metadata.full_name || "Anonymous";
-  const avatar = currentUser.user_metadata.avatar_url || "";
-  const googleId = currentUser.user_metadata.sub || null;
-
-  let { data: userRow } = await supabase
-    .from("users")
-    .select("id")
-    .eq("id", user_id)
-    .maybeSingle();
-
-  if (!userRow) {
-    const insertPayload = {
-      id: user_id,
-      username,
-      avatar_url: avatar,
-      balance: 50
-    };
-    if (googleId) {
-      insertPayload.google_id = googleId;
-    }
-
-    const { error: insertError } = await supabase.from("users").upsert(insertPayload, {
-      onConflict: "id"
-    });
-
-    if (insertError) {
-      console.error("User insert failed:", insertError.message, insertError.details, insertError.code);
-      return;
-    }
-  }
-
-  const userBox = document.createElement("div");
-  userBox.style.display = "flex";
-  userBox.style.alignItems = "center";
-  userBox.style.gap = "10px";
-
-  balanceDisplay = document.createElement("span");
-  balanceDisplay.style.marginRight = "10px";
-  balanceDisplay.textContent = "Balance: $...";
-
-  userBox.innerHTML = `
-    <img src="${avatar}" alt="avatar" style="width:40px;height:40px;border-radius:50%">
-    <span>${username}</span>
-    <a href="/profile.html?id=${user_id}" style="background:var(--accent-color);color:white;padding:0.4rem 0.8rem;border-radius:6px;text-decoration:none;">View Profile</a>
-  `;
-  userBox.prepend(balanceDisplay);
-  document.querySelector("header")?.appendChild(userBox);
-
-  await updateBalanceDisplay();
-}
-
-async function updateBalanceDisplay() {
-  if (!currentUser || !balanceDisplay) return;
-  const { data, error } = await supabase
-    .from("users")
-    .select("balance")
-    .eq("id", currentUser.id)
-    .maybeSingle();
-
-  if (!data || error) {
-    console.warn("Failed to load balance:", error || "no user row");
-    balanceDisplay.textContent = "Balance: $0.00";
-    return;
-  }
-
-  balanceDisplay.textContent = `Balance: $${(+data.balance).toFixed(2)}`;
-}
-
-function generateDetailedChartData(change) {
-  const data = [];
-  const base = Math.random() * 50 + 50;
-  const direction = change >= 0 ? 1 : -1;
-  const volatility = 2 + Math.random() * 3;
-  for (let i = 0; i < 20; i++) {
-    data.push(base + direction * (Math.random() * volatility + i * 0.1));
-  }
-  return data;
-}
-function normalizeData(data) {
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  return data.map(val => max - min === 0 ? 25 : ((val - min) / (max - min)) * 45 + 2.5);
-}
-function generateChartPath(data) {
-  const norm = normalizeData(data);
-  return norm.reduce((path, val, i) => path + ` L ${i * (100 / (norm.length - 1))} ${50 - val}`, `M 0 ${50 - norm[0]}`);
-}
-
-const enhancedCryptos = [
-  { name: "QuantumCoin", symbol: "QTC", price: 2453.78, change: 5.42, icon: "fa-atom", color: "#3a86ff", marketCap: "18.7B", volume: "1.2B", description: "QuantumCoin utilizes quantum-resistant algorithms..." },
-  { name: "NeuralToken", symbol: "NRL", price: 187.65, change: -2.31, icon: "fa-brain", color: "#f72585", marketCap: "4.2B", volume: "320M", description: "NeuralToken powers decentralized AI networks..." },
-  { name: "EtherX", symbol: "ETX", price: 3421.90, change: 8.75, icon: "fa-ethereum", color: "#4cc9f0", marketCap: "41.5B", volume: "2.8B", description: "EtherX is an EVM-compatible blockchain..." },
-  { name: "BitVault", symbol: "BTV", price: 68924.50, change: -1.15, icon: "fa-bitcoin-sign", color: "#f8961e", marketCap: "1.3T", volume: "28.4B", description: "BitVault introduces programmable scarcity..." }
-];
-
-const liveChartData = {};
-enhancedCryptos.forEach(coin => {
-  liveChartData[coin.symbol] = generateDetailedChartData(coin.change).slice(0);
-});
-
-function renderCryptos() {
-  const dashboard = document.querySelector('.dashboard');
-  enhancedCryptos.forEach((crypto, i) => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.style.animationDelay = `${i * 0.1}s`;
-    const chartData = liveChartData[crypto.symbol];
-    const chartPath = generateChartPath(chartData);
-    const changeClass = crypto.change >= 0 ? 'positive' : 'negative';
-    const changeIcon = crypto.change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
-
-    card.innerHTML = `
-      <div class="card-header">
-        <div class="coin-icon" style="background-color: ${crypto.color}20; color: ${crypto.color}">
-          <i class="fas ${crypto.icon}"></i>
-        </div>
-        <div>
-          <div class="coin-name">${crypto.name}</div>
-          <div class="coin-symbol">${crypto.symbol}</div>
-        </div>
-      </div>
-      <div class="coin-price">$${crypto.price.toLocaleString()}</div>
-      <div class="price-change ${changeClass}">
-        <i class="fas ${changeIcon}"></i> ${Math.abs(crypto.change)}%
-      </div>
-      <div class="chart-container">
-        <div class="chart">
-          <svg viewBox="0 0 100 50" class="chart-line" style="stroke: ${crypto.color}">
-            <path d="${chartPath}" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </div>
-      </div>
-    `;
-    card.onclick = () => openModal(crypto);
-    dashboard.appendChild(card);
-  });
-}
-
-function openModal(crypto) {
-  currentCrypto = crypto;
-  const modal = document.getElementById('stockModal');
-  document.getElementById('modalStockName').textContent = crypto.name;
-  document.getElementById('modalStockSymbol').textContent = crypto.symbol;
-  document.getElementById('modalStockPrice').textContent = `$${crypto.price}`;
-  document.getElementById('modalStockChange').innerHTML = `<span class="${crypto.change >= 0 ? 'positive' : 'negative'}"><i class="fas ${crypto.change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'}"></i> ${Math.abs(crypto.change)}%</span>`;
-  document.getElementById('modalStockMarketCap').textContent = `$${crypto.marketCap}`;
-  document.getElementById('modalStockVolume').textContent = `$${crypto.volume}`;
-  document.getElementById('modalStockDescription').textContent = crypto.description;
-
-  const icon = document.getElementById('modalStockIcon');
-  icon.innerHTML = `<i class="fas ${crypto.icon}" style="color: ${crypto.color}"></i>`;
-  icon.style.backgroundColor = `${crypto.color}20`;
-
-  const data = liveChartData[crypto.symbol];
-  const path = generateChartPath(data);
-  document.getElementById('modalStockChart').innerHTML = `
-    <svg viewBox="0 0 100 50" class="chart-line" style="stroke: ${crypto.color}">
-      <path d="${path}" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-    </svg>
-  `;
-
-  document.getElementById('stockModal').classList.add('active');
-  document.getElementById('tradeAmount').value = '';
-}
-
-function setupModal() {
-  const modal = document.getElementById('stockModal');
-  const closeBtn = document.getElementById('modalClose');
-  const buyBtn = document.querySelector('.modal-btn-buy');
-  const sellBtn = document.querySelector('.modal-btn-sell');
-
-  const input = document.createElement('input');
-  input.type = 'number';
-  input.id = 'tradeAmount';
-  input.min = '0.01';
-  input.placeholder = 'Amount';
-  input.style.marginTop = '10px';
-  input.style.padding = '0.6rem';
-  input.style.borderRadius = '8px';
-  input.style.border = '1px solid #ccc';
-  input.style.width = '100%';
-  input.style.gridColumn = '1 / -1';
-  modal.querySelector('.modal-body')?.appendChild(input);
-
-  closeBtn.onclick = () => modal.classList.remove('active');
-  modal.onclick = e => { if (e.target === modal) modal.classList.remove('active'); };
-  buyBtn.onclick = () => handleTrade('Buy');
-  sellBtn.onclick = () => handleTrade('Sell');
-}
-
-async function handleTrade(type) {
-  if (!currentCrypto || !currentUser) return;
-  const btn = document.querySelector(`.modal-btn-${type.toLowerCase()}`);
-  const amount = parseFloat(document.getElementById('tradeAmount').value);
-  if (isNaN(amount) || amount <= 0) return showToast("Enter valid amount", "var(--negative)");
-
-  btn.textContent = `${type}ing...`;
-  btn.disabled = true;
-
-  const value = +(currentCrypto.price * amount).toFixed(2);
-  const { data: userData } = await supabase.from('users').select('*').eq('id', currentUser.id).maybeSingle();
-  let balance = userData?.balance ?? 0;
-
-  if (type === 'Buy' && balance < value) {
-    showToast("Insufficient balance", "var(--negative)");
-  } else {
-    balance += (type === 'Buy' ? -value : value);
-    await supabase.from('users').update({ balance }).eq('id', currentUser.id);
-    await supabase.from('transactions').insert({
-      user_id: currentUser.id,
-      username: currentUser.user_metadata.full_name,
-      avatar_url: currentUser.user_metadata.avatar_url,
-      type,
-      coin_symbol: currentCrypto.symbol,
-      amount,
-      value
-    });
-
-    const chartArr = liveChartData[currentCrypto.symbol];
-    const last = chartArr[chartArr.length - 1] || currentCrypto.price;
-    const noise = Math.random() * 2;
-    const direction = type === 'Buy' ? 1 : -1;
-    const next = last + direction * noise;
-    chartArr.push(next);
-    if (chartArr.length > 20) chartArr.shift();
-
-    const newPath = generateChartPath(chartArr);
-    document.getElementById('modalStockChart').innerHTML = `
-      <svg viewBox="0 0 100 50" class="chart-line" style="stroke: ${currentCrypto.color}">
-        <path d="${newPath}" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-    `;
-
-    showToast(`${type}ed ${amount} ${currentCrypto.symbol}`, "var(--positive)");
-    updateBalanceDisplay();
-  }
-
-  btn.textContent = type;
-  btn.disabled = false;
-}
-
-document.getElementById('themeToggle').addEventListener('click', () => {
-  const theme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-  document.body.setAttribute('data-theme', theme);
-  localStorage.setItem('theme', theme);
-  showToast(`Switched to ${theme} mode`);
-});
-document.body.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
-
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadUserHeader();
-  renderCryptos(); // assuming you already defined this
-  setupModal();    // assuming you already defined this
-});
-</script>
-
-
-
+        // Run the app
+        init();
+    </script>
 </body>
 </html>
